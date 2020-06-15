@@ -14,7 +14,7 @@ impl Recompiler {
     let misalignment = self.alloc.full_stack().0 % 16;
     stack!(self, self.asm.emit_addq_ir(-misalignment, X64Reg::RSP));
     let offset = self.alloc.ptr_position(ptr_idx);
-    let _ = self.asm.emit_callq_m_offset(X64Reg::RSP, offset);
+    trash!(self.asm.emit_callq_m_offset(X64Reg::RSP, offset));
     stack!(self, self.asm.emit_addq_ir(misalignment, X64Reg::RSP));
     self.sysv_caller_epilogue();
   }
@@ -23,7 +23,7 @@ impl Recompiler {
     self.sysv_caller_prologue();
     let misalignment = self.alloc.full_stack().0 % 16;
     stack!(self, self.asm.emit_addq_ir(-misalignment, X64Reg::RSP));
-    let _ = self.asm.emit_callq_r(reg);
+    trash!(self.asm.emit_callq_r(reg));
     stack!(self, self.asm.emit_addq_ir(misalignment, X64Reg::RSP));
     self.sysv_caller_epilogue();
   }

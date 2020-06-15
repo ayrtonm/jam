@@ -63,7 +63,7 @@ impl Recompiler {
   fn load_emu_regs(&mut self, inputs: &[EmuRegNameType]) {
     self.asm.emit_movq_mr(X64Reg::RSP, X64Reg::RAX);
     let offset = self.alloc.full_stack();
-    let _ = self.asm.emit_addq_ir(-(inputs.len() as StackOffsetType) * 4, X64Reg::RSP);
+    trash!(self.asm.emit_addq_ir(-(inputs.len() as StackOffsetType) * 4, X64Reg::RSP));
     let regs = inputs.iter()
                      .enumerate()
                      .map(|(n, &i)| {
@@ -106,7 +106,7 @@ impl Recompiler {
                        size
                      })
                      .sum::<StackOffset>();
-    let _ = self.asm.emit_addq_ir(offset.0, X64Reg::RSP);
+    trash!(self.asm.emit_addq_ir(offset.0, X64Reg::RSP));
     self.alloc.emulator_regs_mut().clear();
   }
 }

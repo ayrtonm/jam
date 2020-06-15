@@ -5,6 +5,18 @@ use crate::Transfer;
 use crate::Direction;
 use crate::alloc::Allocator;
 
+//TODO: create a method to bind multiple values simultaneously
+// right now I might do something like the following before executing each instruction
+//   self.bind_value(Rs)
+//   self.bind_value(Rt)
+//   self.bind_value(Rd)
+// but Rt may unbind Rs and Rd may unbind Rs or Rt if all other registers are bound
+// with the current replacement strategy (always replace rax) this will always happen
+// I could try solving this by improving the replacement strategy to make sure that
+// the last n bound values remain bound, but then this turns into one of those details
+// you have to know to use jam, so from usability perspective it's probably better to
+// make a separate method
+//TODO: also I should definitely pick a better replacement strategy
 impl Allocator {
   pub fn debug(&self) {
     for i in self.mappings.iter() {
