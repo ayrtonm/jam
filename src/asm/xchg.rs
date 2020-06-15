@@ -15,4 +15,17 @@ impl Assembler {
       }
     }
   }
+  pub fn emit_xchgq_rr(&mut self, reg1: X64Reg, reg2: X64Reg) {
+    if reg1 == X64Reg::RAX || reg2 == X64Reg::RAX {
+      let rexb = Assembler::rexb(reg1) | Assembler::rexb(reg2);
+      let prefix = Assembler::REX | Assembler::REXW | rexb;
+      self.emit_u8(prefix);
+      self.emit_u8(0x90 | reg1.low() | reg2.low());
+    } else {
+      let prefix = Assembler::REX | Assembler::REXW | Assembler::rexb(reg1) | Assembler::rexr(reg2);
+      self.emit_u8(prefix);
+      self.emit_u8(0x87);
+      self.emit_u8(Assembler::MOD11 | reg1.low() | reg2.low() << 3);
+    }
+  }
 }
