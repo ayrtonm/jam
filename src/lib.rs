@@ -61,6 +61,16 @@ struct Transfer {
   dir: Direction,
 }
 
+#[derive(Debug, PartialEq, Copy, Clone, Eq, Hash)]
+pub enum ArgNumber {
+  Arg1,
+  Arg2,
+  Arg3,
+  Arg4,
+  Arg5,
+  Arg6,
+}
+
 impl std::ops::Add for StackOffset {
   type Output = Self;
   fn add(self, other: Self) -> Self {
@@ -117,15 +127,14 @@ impl X64Reg {
     vec![X64Reg::RBX, X64Reg::RSP, X64Reg::RBP,
          X64Reg::R12, X64Reg::R13, X64Reg::R14, X64Reg::R15]
   }
-  pub fn argn_reg(n: usize) -> X64Reg {
+  pub fn argn_reg(n: ArgNumber) -> X64Reg {
     match n {
-      1 => X64Reg::RDI,
-      2 => X64Reg::RSI,
-      3 => X64Reg::RDX,
-      4 => X64Reg::RCX,
-      5 => X64Reg::R8,
-      6 => X64Reg::R9,
-      _ => unreachable!("argn_reg() called with an invalid argument {}", n),
+      ArgNumber::Arg1 => X64Reg::RDI,
+      ArgNumber::Arg2 => X64Reg::RSI,
+      ArgNumber::Arg3 => X64Reg::RDX,
+      ArgNumber::Arg4 => X64Reg::RCX,
+      ArgNumber::Arg5 => X64Reg::R8,
+      ArgNumber::Arg6 => X64Reg::R9,
     }
   }
 }

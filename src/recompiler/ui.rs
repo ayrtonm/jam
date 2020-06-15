@@ -2,9 +2,28 @@ use crate::StackOffset;
 use crate::JITValue;
 use crate::X64Reg;
 use crate::EmuRegNameType;
+use crate::ArgNumber;
 use crate::recompiler::Recompiler;
 
 impl Recompiler {
+  pub fn call_int(&mut self, value: JITValue) {
+    let reg = self.bind_value(value);
+    self.sysv_prologue();
+    let misalignment = self.alloc.full_stack().0 % 16;
+    *self.alloc.stack_mut() += self.asm.emit_addq_ir(-misalignment, X64Reg::RSP);
+    *self.alloc.stack_mut() += self.asm.emit_callq_r(reg);
+    *self.alloc.stack_mut() += self.asm.emit_addq_ir(misalignment, X64Reg::RSP);
+    self.sysv_epilogue();
+  }
+  pub fn call_ext(&mut self, value: JITValue) {
+    let reg = self.bind_value(value);
+    self.sysv_prologue();
+    let misalignment = self.alloc.full_stack().0 % 16;
+    *self.alloc.stack_mut() += self.asm.emit_addq_ir(-misalignment, X64Reg::RSP);
+    let _ = self.asm.emit_callq_r(reg);
+    *self.alloc.stack_mut() += self.asm.emit_addq_ir(misalignment, X64Reg::RSP);
+    self.sysv_epilogue();
+  }
   pub fn reg(&self, reg: EmuRegNameType) -> Option<JITValue> {
     self.alloc
         .emulator_regs()
@@ -45,7 +64,7 @@ impl Recompiler {
       },
     }
   }
-  pub fn set_argn(&mut self, value: JITValue, n: usize) {
+  pub fn set_argn(&mut self, value: JITValue, n: ArgNumber) {
     let arg_reg = X64Reg::argn_reg(n);
     match self.alloc.value_to_reg(&value) {
       Some(&value_reg) => {

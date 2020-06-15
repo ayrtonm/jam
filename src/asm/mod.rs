@@ -1,8 +1,8 @@
-use crate::StackOffset;
 use crate::X64Reg;
 
 mod ui;
 mod add;
+mod call;
 mod mov;
 mod stack;
 mod xchg;
@@ -67,9 +67,5 @@ impl Assembler {
     imm64.to_ne_bytes().iter().for_each(|&b| {
       self.emit_u8(b);
     });
-  }
-  pub fn emit_retq(&mut self) -> StackOffset {
-    self.emit_u8(0xc3);
-    StackOffset(-8)
   }
 }
