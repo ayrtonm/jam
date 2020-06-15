@@ -1,4 +1,5 @@
 use std::io;
+use std::collections::HashSet;
 use crate::alloc::Allocator;
 use crate::asm::Assembler;
 use crate::jit_fn::JITFn;
@@ -13,9 +14,19 @@ use crate::recompiler::Recompiler;
 
 impl Recompiler {
   pub fn new(inputs: &[EmuRegNameType], pointers: &[PtrType]) -> Self {
+    //make sure there are no input registers or pointers are duplicated
+    #[cfg(debug_assertions)]
+    {
+      let mut unique_inputs = HashSet::new();
+      assert!(inputs.iter().all(|&i| unique_inputs.insert(i)));
+      let mut unique_ptrs = HashSet::new();
+      assert!(pointers.iter().all(|&p| unique_ptrs.insert(p)));
+    }
+
     let alloc = Allocator::new();
     let asm = Assembler::new();
     let mut recompiler = Recompiler { alloc, asm };
+
     recompiler.sysv_callee_prologue();
     recompiler.load_pointers(pointers);
     recompiler.load_emu_regs(inputs);
