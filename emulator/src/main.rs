@@ -20,13 +20,13 @@ fn main() {
   //for i in 1..32 {
   //  rc.reg(i).unwrap();
   //}
-  //let r8 = rc.reg(8).unwrap();
-  //let r1 = rc.reg(1).unwrap();
-  //rc.set_argn(r1, ArgNumber::Arg1);
-  //rc.call_ptr(2);
-  //rc.set_u32(r8, r1);
-  //rc.load_ptr(r1, 1);
-  //rc.deref_u64(r1);
+  let r8 = rc.reg(8).unwrap();
+  let r1 = rc.reg(1).unwrap();
+  rc.set_argn(r1, ArgNumber::Arg1);
+  rc.call_ptr(2);
+  rc.set_u32(r8, r1);
+  rc.load_ptr(r1, 1);
+  rc.deref_u64(r1);
   //rc.debug();
   let jitfn = rc.compile().unwrap();
   assert_eq!(mips_registers[1], 0xdead_beef);
