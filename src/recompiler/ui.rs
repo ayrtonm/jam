@@ -6,7 +6,11 @@ use crate::recompiler::Recompiler;
 
 impl Recompiler {
   pub fn reg(&self, reg: EmuRegNameType) -> Option<JITValue> {
-    self.alloc.emulator_regs().iter().find(|&r| r.name.0 == reg).map(|o| JITValue::EmuReg(*o))
+    self.alloc
+        .emulator_regs()
+        .iter()
+        .find(|&r| r.name.0 == reg)
+        .map(|o| JITValue::EmuReg(*o))
   }
   pub fn new_u8(&mut self) -> JITValue {
     self.new_variable(StackOffset(1))
@@ -29,7 +33,29 @@ impl Recompiler {
     let reg = self.bind_value(value);
     self.asm.emit_movq_mr(reg, reg);
   }
-  //pub fn load_reg(&mut self, dest: JITValue, reg_idx: u32) {
-  //  let reg = self.alloc.emulator_regs().iter().find(|&r| r.name.0 == reg_idx);
-  //}
+  pub fn set_u32(&mut self, dest: JITValue, src: JITValue) {
+    let dest_reg = self.bind_value(dest);
+    match self.alloc.value_to_reg(&src) {
+      Some(&src_reg) => {
+        self.asm.emit_movl_rr(src_reg, dest_reg);
+      },
+      None => {
+        let offset = self.alloc.value_position(&src);
+        self.asm.emit_movl_mr_offset(X64Reg::RSP, dest_reg, offset);
+      },
+    }
+  }
+  pub fn set_argn(&mut self, value: JITValue, n: usize) {
+    let arg_reg = X64Reg::argn_reg(n);
+    match self.alloc.value_to_reg(&value) {
+      Some(&value_reg) => {
+        self.alloc.swap_bindings(value_reg, arg_reg);
+        self.asm.emit_xchgq_rr(value_reg, arg_reg);
+      },
+      None => {
+        let offset = self.alloc.value_position(&value);
+        self.asm.emit_movq_mr_offset(X64Reg::RSP, arg_reg, offset);
+      },
+    }
+  }
 }

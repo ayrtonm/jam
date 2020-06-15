@@ -42,6 +42,7 @@ pub struct Variable {
 }
 
 #[derive(Debug, PartialEq, Copy, Clone, Eq, Hash)]
+#[must_use]
 pub enum JITValue {
   EmuReg(EmuReg),
   Variable(Variable),
@@ -115,6 +116,17 @@ impl X64Reg {
   pub fn callee_saved_regs() -> Vec<X64Reg> {
     vec![X64Reg::RBX, X64Reg::RSP, X64Reg::RBP,
          X64Reg::R12, X64Reg::R13, X64Reg::R14, X64Reg::R15]
+  }
+  pub fn argn_reg(n: usize) -> X64Reg {
+    match n {
+      1 => X64Reg::RDI,
+      2 => X64Reg::RSI,
+      3 => X64Reg::RDX,
+      4 => X64Reg::RCX,
+      5 => X64Reg::R8,
+      6 => X64Reg::R9,
+      _ => unreachable!("argn_reg() called with an invalid argument {}", n),
+    }
   }
 }
 

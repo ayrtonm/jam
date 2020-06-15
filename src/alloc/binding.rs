@@ -66,4 +66,24 @@ impl Allocator {
         })
         .collect()
   }
+  pub fn swap_bindings(&mut self, reg1: X64Reg, reg2: X64Reg) {
+    let val1 = self.mappings.get_by_left(&reg1).map(|&v| v);
+    let val2 = self.mappings.get_by_left(&reg2).map(|&v| v);
+    match val1 {
+      Some(val) => {
+        self.mappings.insert(reg2, val);
+      },
+      None => {
+        self.mappings.remove_by_left(&reg2);
+      },
+    }
+    match val2 {
+      Some(val) => {
+        self.mappings.insert(reg1, val);
+      },
+      None => {
+        self.mappings.remove_by_left(&reg1);
+      },
+    }
+  }
 }

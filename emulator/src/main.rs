@@ -9,7 +9,9 @@ fn main() {
               &aux_value as *const u64 as u64];
   let inputs = [1, 8];
   let mut rc = Recompiler::new(&inputs, &ptrs);
-  let r1 = rc.reg(1).expect("");
+  let r8 = rc.reg(8).unwrap();
+  let r1 = rc.reg(1).unwrap();
+  rc.set_u32(r8, r1);
   rc.load_ptr(r1, 1);
   rc.deref_u64(r1);
   let jitfn = rc.compile().unwrap();
@@ -17,5 +19,4 @@ fn main() {
   jitfn.run();
   assert_eq!(mips_registers[1], aux_value as u32);
   println!("{:x?}", mips_registers);
-  println!("{:x?}", aux_value);
 }

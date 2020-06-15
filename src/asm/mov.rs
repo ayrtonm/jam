@@ -3,6 +3,11 @@ use crate::X64Reg;
 use crate::StackOffset;
 
 impl Assembler {
+  pub fn emit_movl_rr(&mut self, src: X64Reg, dest: X64Reg) {
+    self.emit_cond_rexrb(src, dest);
+    self.buffer.push(Assembler::MOV2);
+    self.buffer.push(Assembler::MOD11 | src.low() << 3| dest.low());
+  }
   pub fn emit_movq_ir(&mut self, src: u64, dest: X64Reg) {
     let prefix = Assembler::REX | Assembler::REXW | Assembler::rexb(dest);
     self.emit_u8(prefix);
