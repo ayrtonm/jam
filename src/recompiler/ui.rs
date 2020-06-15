@@ -9,20 +9,19 @@ impl Recompiler {
   pub fn call_ptr(&mut self, ptr_idx: usize) {
     self.sysv_prologue();
     let misalignment = self.alloc.full_stack().0 % 16;
-    *self.alloc.stack_mut() += self.asm.emit_addq_ir(-misalignment, X64Reg::RSP);
+    stack!(self, self.asm.emit_addq_ir(-misalignment, X64Reg::RSP));
     let offset = self.alloc.ptr_position(ptr_idx);
-    println!("{:?} {:?}", offset, self.alloc.full_stack());
     let _ = self.asm.emit_callq_m_offset(X64Reg::RSP, offset);
-    *self.alloc.stack_mut() += self.asm.emit_addq_ir(misalignment, X64Reg::RSP);
+    stack!(self, self.asm.emit_addq_ir(misalignment, X64Reg::RSP));
     self.sysv_epilogue();
   }
   pub fn call(&mut self, value: JITValue) {
     let reg = self.bind_value(value);
     self.sysv_prologue();
     let misalignment = self.alloc.full_stack().0 % 16;
-    *self.alloc.stack_mut() += self.asm.emit_addq_ir(-misalignment, X64Reg::RSP);
+    stack!(self, self.asm.emit_addq_ir(-misalignment, X64Reg::RSP));
     let _ = self.asm.emit_callq_r(reg);
-    *self.alloc.stack_mut() += self.asm.emit_addq_ir(misalignment, X64Reg::RSP);
+    stack!(self, self.asm.emit_addq_ir(misalignment, X64Reg::RSP));
     self.sysv_epilogue();
   }
   pub fn reg(&self, reg: EmuRegNameType) -> Option<JITValue> {
@@ -30,7 +29,7 @@ impl Recompiler {
         .emulator_regs()
         .iter()
         .find(|&r| r.name.0 == reg)
-        .map(|o| JITValue::EmuReg(*o))
+        .map(|r| JITValue::EmuReg(*r))
   }
   pub fn new_u8(&mut self) -> JITValue {
     self.new_variable(StackOffset(1))

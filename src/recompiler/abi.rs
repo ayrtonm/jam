@@ -16,7 +16,7 @@ impl Recompiler {
     let alloc = Allocator::new();
     let asm = Assembler::new();
     let mut recompiler = Recompiler { alloc, asm };
-    recompiler.sysv_prologue();
+    recompiler.init_sysv_prologue();
     recompiler.load_pointers(pointers);
     recompiler.load_emu_regs(inputs);
     recompiler
@@ -27,23 +27,22 @@ impl Recompiler {
     self.asm.emit_transfers(transfers, self.alloc.full_stack());
     self.save_emu_regs();
     self.free_pointers();
-    self.sysv_epilogue();
+    self.init_sysv_epilogue();
     *self.alloc.native_ptrs_mut() += self.asm.emit_retq();
     #[cfg(debug_assertions)]
     assert_eq!(self.alloc.full_stack(), StackOffset(0));
     self.asm.assemble()
   }
   fn free_variables(&mut self) {
-    let offset = self.asm.emit_addq_ir(self.alloc.stack().0, X64Reg::RSP);
-    *self.alloc.stack_mut() += offset;
+    stack!(self, self.asm.emit_addq_ir(self.alloc.stack().0, X64Reg::RSP));
   }
-  pub(super) fn sysv_prologue(&mut self) {
+  fn init_sysv_prologue(&mut self) {
     let offset = X64Reg::callee_saved_regs().into_iter()
                                             .map(|r| self.asm.emit_pushq_r(r))
                                             .sum::<StackOffset>();
     *self.alloc.native_ptrs_mut() += offset;
   }
-  pub(super) fn sysv_epilogue(&mut self) {
+  fn init_sysv_epilogue(&mut self) {
     let offset = X64Reg::callee_saved_regs().into_iter()
                                             .rev()
                                             .map(|r| self.asm.emit_popq_r(r))
