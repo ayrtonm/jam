@@ -43,14 +43,25 @@ impl Recompiler {
                                             .sum::<StackOffset>();
     *self.alloc.native_ptrs_mut() += offset;
   }
-  pub(super) fn load_pointers(&mut self, pointers: &[PtrType]) {
+  pub(super) fn sysv_epilogue(&mut self) {
+    let offset = X64Reg::callee_saved_regs().into_iter()
+                                            .rev()
+                                            .map(|r| self.asm.emit_popq_r(r))
+                                            .sum::<StackOffset>();
+    *self.alloc.native_ptrs_mut() += offset;
+  }
+  fn load_pointers(&mut self, pointers: &[PtrType]) {
     let offset = pointers.iter()
                          .rev()
                          .map(|&p| self.asm.emit_pushq_i(p))
                          .sum();
     *self.alloc.emulator_ptrs_mut() += offset;
   }
-  pub(super) fn load_emu_regs(&mut self, inputs: &[EmuRegNameType]) {
+  fn free_pointers(&mut self) {
+    let offset = self.asm.emit_addq_ir(self.alloc.emulator_ptrs().0, X64Reg::RSP);
+    *self.alloc.emulator_ptrs_mut() += offset;
+  }
+  fn load_emu_regs(&mut self, inputs: &[EmuRegNameType]) {
     self.asm.emit_movq_mr(X64Reg::RSP, X64Reg::RAX);
     let offset = self.alloc.full_stack();
     let _ = self.asm.emit_addq_ir(-(inputs.len() as StackOffsetType) * 4, X64Reg::RSP);
@@ -79,7 +90,7 @@ impl Recompiler {
           self.asm.emit_movl_rm_offset(X64Reg::RCX, X64Reg::RSP, *pos);
         });
   }
-  pub(super) fn save_emu_regs(&mut self) {
+  fn save_emu_regs(&mut self) {
     self.asm.emit_movq_mr_offset(X64Reg::RSP, X64Reg::RAX, self.alloc.ptr_position(0));
     let regs = self.alloc
                    .emulator_regs()
@@ -98,16 +109,5 @@ impl Recompiler {
                      .sum::<StackOffset>();
     let _ = self.asm.emit_addq_ir(offset.0, X64Reg::RSP);
     self.alloc.emulator_regs_mut().clear();
-  }
-  pub(super) fn free_pointers(&mut self) {
-    let offset = self.asm.emit_addq_ir(self.alloc.emulator_ptrs().0, X64Reg::RSP);
-    *self.alloc.emulator_ptrs_mut() += offset;
-  }
-  pub(super) fn sysv_epilogue(&mut self) {
-    let offset = X64Reg::callee_saved_regs().into_iter()
-                                            .rev()
-                                            .map(|r| self.asm.emit_popq_r(r))
-                                            .sum::<StackOffset>();
-    *self.alloc.native_ptrs_mut() += offset;
   }
 }

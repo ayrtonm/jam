@@ -20,8 +20,9 @@ fn main() {
   let r8 = rc.reg(8).unwrap();
   let r1 = rc.reg(1).unwrap();
   rc.set_argn(r1, ArgNumber::Arg1);
+  //rc.call_ptr(2);
   rc.load_ptr(r8, 2);
-  rc.call_ext(r8);
+  rc.call(r8);
   rc.set_u32(r8, r1);
   rc.load_ptr(r1, 1);
   rc.deref_u64(r1);
