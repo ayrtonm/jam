@@ -1,9 +1,9 @@
 #![deny(unused_must_use)]
 
 pub mod recompiler;
+pub mod jit_fn;
 mod alloc;
 mod asm;
-mod jit_fn;
 
 //obtained by casting *const fn() as u64
 type PtrType = u64;
