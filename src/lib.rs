@@ -1,9 +1,4 @@
-#![allow(dead_code)]
 #![deny(unused_must_use)]
-use std::io;
-use crate::alloc::Allocator;
-use crate::asm::Assembler;
-use crate::jit_fn::JITFn;
 
 pub mod recompiler;
 mod alloc;

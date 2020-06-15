@@ -1,5 +1,6 @@
 use crate::asm::Assembler;
 use crate::X64Reg;
+use crate::StackOffset;
 
 impl Assembler {
   pub fn emit_movq_ir(&mut self, src: u64, dest: X64Reg) {
@@ -8,7 +9,8 @@ impl Assembler {
     self.emit_u8(0xb8 | dest.low());
     self.emit_u64(src);
   }
-  pub fn emit_movl_mr_offset(&mut self, ptr: X64Reg, dest: X64Reg, offset: i32) {
+  pub fn emit_movl_mr_offset(&mut self, ptr: X64Reg, dest: X64Reg, offset: StackOffset) {
+    let offset = offset.0;
     self.emit_cond_rexrb(dest, ptr);
     self.emit_u8(Assembler::MOV);
     match offset {
@@ -24,7 +26,8 @@ impl Assembler {
       },
     }
   }
-  pub fn emit_movl_rm_offset(&mut self, src: X64Reg, ptr: X64Reg, offset: i32) {
+  pub fn emit_movl_rm_offset(&mut self, src: X64Reg, ptr: X64Reg, offset: StackOffset) {
+    let offset = offset.0;
     self.emit_cond_rexrb(src, ptr);
     self.emit_u8(Assembler::MOV2);
     match offset {
@@ -54,7 +57,8 @@ impl Assembler {
       }
     }
   }
-  pub fn emit_movq_mr_offset(&mut self, ptr: X64Reg, dest: X64Reg, offset: i32) {
+  pub fn emit_movq_mr_offset(&mut self, ptr: X64Reg, dest: X64Reg, offset: StackOffset) {
+    let offset = offset.0;
     let prefix = Assembler::REX | Assembler::REXW | Assembler::rexr(dest) | Assembler::rexb(ptr);
     self.emit_u8(prefix);
     self.emit_u8(Assembler::MOV);
