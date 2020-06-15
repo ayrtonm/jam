@@ -9,29 +9,31 @@ extern fn print(x: u32) {
 
 fn main() {
   let mut mips_registers: [u32; 32] = [0; 32];
-  let aux_value: u64 = 0xbfc0_0000;
+  let aux_value: u32 = 0xbfc0_0000;
+  let aux_value_2: u32 = 0xf0f0_abcd;
   mips_registers[1] = 0xdead_beef;
   mips_registers[8] = 0xffff_0000;
   let ptrs = [&mips_registers[0] as *const u32 as u64,
-              &aux_value as *const u64 as u64,
+              &aux_value as *const u32 as u64,
+              &aux_value_2 as *const u32 as u64,
               print as *const fn(u32) as u64];
   let inputs = (0..32).collect::<Vec<_>>();
   let mut rc = Recompiler::new(&inputs, &ptrs);
-  //for i in 1..32 {
-  //  rc.reg(i).unwrap();
-  //}
+  for i in 0..32 {
+    let r = rc.reg(i).unwrap();
+    rc.load_ptr(r, 1);
+    rc.deref_u32(r);
+  }
   let r8 = rc.reg(8).unwrap();
   let r1 = rc.reg(1).unwrap();
   rc.set_argn(r1, ArgNumber::Arg1);
-  rc.call_ptr(2);
-  rc.set_u32(r8, r1);
-  rc.load_ptr(r1, 1);
-  rc.deref_u64(r1);
-  //rc.debug();
+  rc.call_ptr(3);
+  rc.load_ptr(r8, 2);
+  rc.deref_u32(r8);
   let jitfn = rc.compile().unwrap();
   assert_eq!(mips_registers[1], 0xdead_beef);
   jitfn.run();
-  assert_eq!(mips_registers[1], aux_value as u32);
-  println!("{:x?}", mips_registers);
+  println!("{:#x?}", mips_registers);
   println!("{} bytes", jitfn.size());
+  assert_eq!(mips_registers[1], aux_value as u32);
 }

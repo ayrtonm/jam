@@ -10,22 +10,22 @@ impl Recompiler {
     self.alloc.debug();
   }
   pub fn call_ptr(&mut self, ptr_idx: usize) {
-    self.sysv_prologue();
+    self.sysv_caller_prologue();
     let misalignment = self.alloc.full_stack().0 % 16;
     stack!(self, self.asm.emit_addq_ir(-misalignment, X64Reg::RSP));
     let offset = self.alloc.ptr_position(ptr_idx);
     let _ = self.asm.emit_callq_m_offset(X64Reg::RSP, offset);
     stack!(self, self.asm.emit_addq_ir(misalignment, X64Reg::RSP));
-    self.sysv_epilogue();
+    self.sysv_caller_epilogue();
   }
   pub fn call(&mut self, value: JITValue) {
     let reg = self.bind_value(value);
-    self.sysv_prologue();
+    self.sysv_caller_prologue();
     let misalignment = self.alloc.full_stack().0 % 16;
     stack!(self, self.asm.emit_addq_ir(-misalignment, X64Reg::RSP));
     let _ = self.asm.emit_callq_r(reg);
     stack!(self, self.asm.emit_addq_ir(misalignment, X64Reg::RSP));
-    self.sysv_epilogue();
+    self.sysv_caller_epilogue();
   }
   pub fn reg(&self, reg: EmuRegNameType) -> Option<JITValue> {
     self.alloc
@@ -50,6 +50,10 @@ impl Recompiler {
     let reg = self.bind_value(dest);
     let offset = self.alloc.ptr_position(ptr_idx);
     self.asm.emit_movq_mr_offset(X64Reg::RSP, reg, offset);
+  }
+  pub fn deref_u32(&mut self, value: JITValue) {
+    let reg = self.bind_value(value);
+    self.asm.emit_movl_mr(reg, reg);
   }
   pub fn deref_u64(&mut self, value: JITValue) {
     let reg = self.bind_value(value);

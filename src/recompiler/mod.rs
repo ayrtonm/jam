@@ -33,14 +33,14 @@ impl Recompiler {
     self.asm.emit_transfers(transfers, self.alloc.full_stack());
     *self.alloc.value_to_reg(&value).expect("")
   }
-  fn sysv_prologue(&mut self) {
-    let offset = X64Reg::callee_saved_regs().into_iter()
+  fn sysv_caller_prologue(&mut self) {
+    let offset = X64Reg::caller_saved_regs().into_iter()
                                             .map(|r| self.asm.emit_pushq_r(r))
                                             .sum::<StackOffset>();
     *self.alloc.stack_mut() += offset;
   }
-  fn sysv_epilogue(&mut self) {
-    let offset = X64Reg::callee_saved_regs().into_iter()
+  fn sysv_caller_epilogue(&mut self) {
+    let offset = X64Reg::caller_saved_regs().into_iter()
                                             .rev()
                                             .map(|r| self.asm.emit_popq_r(r))
                                             .sum::<StackOffset>();

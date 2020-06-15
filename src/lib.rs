@@ -127,6 +127,10 @@ impl X64Reg {
     vec![X64Reg::RBX, X64Reg::RSP, X64Reg::RBP,
          X64Reg::R12, X64Reg::R13, X64Reg::R14, X64Reg::R15]
   }
+  pub fn caller_saved_regs() -> Vec<X64Reg> {
+    vec![X64Reg::RAX, X64Reg::RCX, X64Reg::RDX, X64Reg::RSI, X64Reg::RDI,
+         X64Reg::R8, X64Reg::R9, X64Reg::R10, X64Reg::R11]
+  }
   pub fn argn_reg(n: ArgNumber) -> X64Reg {
     match n {
       ArgNumber::Arg1 => X64Reg::RDI,
