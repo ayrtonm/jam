@@ -6,6 +6,9 @@ use crate::ArgNumber;
 use crate::recompiler::Recompiler;
 
 impl Recompiler {
+  pub fn debug(&self) {
+    self.alloc.debug();
+  }
   pub fn call_ptr(&mut self, ptr_idx: usize) {
     self.sysv_prologue();
     let misalignment = self.alloc.full_stack().0 % 16;
@@ -72,6 +75,7 @@ impl Recompiler {
         self.asm.emit_xchgq_rr(value_reg, arg_reg);
       },
       None => {
+        self.alloc.bind(value, arg_reg);
         let offset = self.alloc.value_position(&value);
         self.asm.emit_movq_mr_offset(X64Reg::RSP, arg_reg, offset);
       },

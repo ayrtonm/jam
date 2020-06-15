@@ -6,6 +6,11 @@ use crate::Direction;
 use crate::alloc::Allocator;
 
 impl Allocator {
+  pub fn debug(&self) {
+    for i in self.mappings.iter() {
+      println!("{:?}", i);
+    }
+  }
   fn free_regs(&self) -> Vec<X64Reg> {
     let all_regs = X64Reg::free_regs().into_iter().collect::<HashSet<_>>();
     let used_regs = self.mappings.left_values().cloned().collect::<HashSet<_>>();
@@ -13,6 +18,18 @@ impl Allocator {
   }
   pub fn value_to_reg(&self, value: &JITValue) -> Option<&X64Reg> {
     self.mappings.get_by_right(value)
+  }
+  pub fn bind(&mut self, value: JITValue, reg: X64Reg) -> Vec<Transfer> {
+    match self.mappings.get_by_left(&reg) {
+      Some(&prev_value) => {
+        self.mappings.insert(reg, value);
+        self.bind_value(prev_value)
+      },
+      None => {
+        self.mappings.insert(reg, value);
+        Vec::new()
+      },
+    }
   }
   pub fn bind_value(&mut self, value: JITValue) -> Vec<Transfer> {
     if !self.mappings.contains_right(&value) {
