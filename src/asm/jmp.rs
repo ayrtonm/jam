@@ -18,4 +18,20 @@ impl Assembler {
     self.labels_used.insert(location, label);
     self.emit_u8(Assembler::LABEL_PLACEHOLDER);
   }
+  pub fn emit_jc_rel8(&mut self, offset: i8) {
+    self.emit_u8(Assembler::JC);
+    self.emit_u8(offset as u8);
+  }
+  pub fn emit_jc_label(&mut self, label: Label) {
+    self.emit_u8(Assembler::JC);
+    self.emit_label(label);
+  }
+  pub fn emit_jnc_rel8(&mut self, offset: i8) {
+    self.emit_u8(Assembler::JNC);
+    self.emit_u8(offset as u8);
+  }
+  pub fn emit_jnc_label(&mut self, label: Label) {
+    self.emit_u8(Assembler::JNC);
+    self.emit_label(label);
+  }
 }

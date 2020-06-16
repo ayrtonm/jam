@@ -121,4 +121,10 @@ impl Recompiler {
   pub fn jump(&mut self, label: Label) {
     self.asm.emit_jmp_label(label);
   }
+  pub fn jump_if_carry(&mut self, label: Label) {
+    self.asm.emit_jc_label(label);
+  }
+  pub fn jump_if_no_carry(&mut self, label: Label) {
+    self.asm.emit_jnc_label(label);
+  }
 }

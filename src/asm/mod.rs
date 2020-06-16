@@ -25,6 +25,8 @@ impl Assembler {
   const ADD_I32: u8 = 0x81;
   const ADD_EAX: u8 = 0x05;
   const JMP: u8 = 0xeb;
+  const JC: u8 = 0x72;
+  const JNC: u8 = 0x73;
   const LABEL_PLACEHOLDER: u8 = 0xff;
   const MOD11: u8 = 0xc0;
   const MOV: u8 = 0x8b;
