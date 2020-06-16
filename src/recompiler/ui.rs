@@ -99,4 +99,13 @@ impl Recompiler {
     let dest_reg = self.bind_value(dest);
     self.asm.emit_orl_ir(imm32, dest_reg);
   }
+  pub fn bti_u32(&mut self, value: JITValue, imm5: u32) {
+    let reg = self.bind_value(value);
+    self.asm.emit_btl_ir(imm5, reg);
+  }
+  //TODO: replace addq with addl
+  pub fn addi_u32(&mut self, dest: JITValue, imm32: i32) {
+    let dest_reg = self.bind_value(dest);
+    trash!(self.asm.emit_addq_ir(imm32, dest_reg));
+  }
 }
