@@ -24,6 +24,9 @@ impl Assembler {
         (Direction::StoreValue, StackOffset(4)) => {
           self.emit_movl_rm_offset(t.reg, X64Reg::RSP, offset);
         },
+        (Direction::LoadValue, StackOffset(8)) => {
+          self.emit_movq_mr_offset(X64Reg::RSP, t.reg, offset);
+        },
         _ => todo!("{:?} {:?}", t.dir, size),
       }
     }

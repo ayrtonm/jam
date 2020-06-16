@@ -22,7 +22,6 @@ impl Recompiler {
       let mut unique_ptrs = HashSet::new();
       assert!(pointers.iter().all(|&p| unique_ptrs.insert(p)));
     }
-
     let alloc = Allocator::new();
     let asm = Assembler::new();
     let mut recompiler = Recompiler { alloc, asm };
