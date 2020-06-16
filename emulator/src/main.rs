@@ -11,12 +11,15 @@ fn main() {
   let mut mips_registers: [u32; 32] = [0; 32];
   let aux_value: u32 = 0xbfc0_0000;
   let aux_value_2: u32 = 0xf0f0_abcd;
+  let mut aux_array: [u32; 10] = [0; 10];
+  aux_array[3] = 0xabcd_1234;
   mips_registers[1] = 0xdead_beef;
   mips_registers[8] = 0xffff_0000;
   let ptrs = [&mips_registers[0] as *const u32 as u64,
               &aux_value as *const u32 as u64,
               &aux_value_2 as *const u32 as u64,
-              print as *const fn(u32) as u64];
+              print as *const fn(u32) as u64,
+              &aux_array[0] as *const u32 as u64];
   let inputs = (0..32).collect::<Vec<_>>();
   let mut rc = Recompiler::new(&inputs, &ptrs);
   for i in 0..32 {
@@ -34,6 +37,9 @@ fn main() {
   let r3 = rc.reg(3).unwrap();
   rc.setv_u32(r2, r8);
   rc.seti_u32(r3, 0xf0f0_0f0f);
+  let r4 = rc.reg(4).unwrap();
+  rc.load_ptr(r4, 4);
+  rc.index_u32(r4, 3);
   let jitfn = rc.compile().unwrap();
   assert_eq!(mips_registers[1], 0xdead_beef);
   jitfn.run();

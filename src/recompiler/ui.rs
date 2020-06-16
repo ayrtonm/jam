@@ -1,4 +1,5 @@
 use crate::StackOffset;
+use crate::StackOffsetType;
 use crate::JITValue;
 use crate::X64Reg;
 use crate::EmuRegNameType;
@@ -51,6 +52,10 @@ impl Recompiler {
     let offset = self.alloc.ptr_position(ptr_idx);
     self.asm.emit_movq_mr_offset(X64Reg::RSP, reg, offset);
   }
+  pub fn index_u32(&mut self, value: JITValue, idx: StackOffsetType) {
+    let reg = self.bind_value(value);
+    self.asm.emit_movl_mr_offset(reg, reg, StackOffset(idx * 4));
+  }
   pub fn deref_u32(&mut self, value: JITValue) {
     let reg = self.bind_value(value);
     self.asm.emit_movl_mr(reg, reg);
@@ -89,6 +94,7 @@ impl Recompiler {
       },
     }
   }
+  //TODO: handle the case where we can use emit_orl_im
   pub fn ori_u32(&mut self, dest: JITValue, imm32: u32) {
     let dest_reg = self.bind_value(dest);
     self.asm.emit_orl_ir(imm32, dest_reg);
