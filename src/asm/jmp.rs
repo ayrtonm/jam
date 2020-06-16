@@ -11,11 +11,11 @@ impl Assembler {
   }
   pub fn emit_jmp_label(&mut self, label: Label) {
     self.emit_u8(Assembler::JMP);
-    self.emit_use_label(label);
+    self.emit_label(label);
   }
-  pub fn emit_use_label(&mut self, label: Label) {
-    let location = self.buffer.len();
-    self.buffer.push(Assembler::LABEL_PLACEHOLDER);
-    self.labels_used.insert(StackOffset(location as StackOffsetType), label);
+  pub fn emit_label(&mut self, label: Label) {
+    let location = StackOffset(self.buffer.len() as StackOffsetType);
+    self.labels_used.insert(location, label);
+    self.emit_u8(Assembler::LABEL_PLACEHOLDER);
   }
 }

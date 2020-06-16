@@ -72,6 +72,7 @@ pub enum ArgNumber {
 }
 
 #[derive(Debug, PartialEq, Copy, Clone, Eq, Hash)]
+#[must_use]
 pub struct Label {
   id: usize,
   size: StackOffset,

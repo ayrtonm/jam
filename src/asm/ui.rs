@@ -26,13 +26,18 @@ impl Assembler {
   pub fn new_label(&mut self) -> Label {
     let label = Label {
       id: self.label_counter,
-      size: StackOffset(8),
+      size: StackOffset(1),
     };
     self.label_counter += 1;
     label
   }
   pub fn define_label(&mut self, label: Label) {
     self.labels_defined.insert(label, StackOffset(self.buffer.len() as StackOffsetType));
+  }
+  pub fn new_defined_label(&mut self) -> Label {
+    let label = self.new_label();
+    self.define_label(label);
+    label
   }
   pub fn emit_transfers(&mut self, transfers: Vec<Transfer>, stack: StackOffset) {
     for t in transfers {
@@ -56,12 +61,12 @@ impl Assembler {
     for (&loc, &label) in self.labels_used.iter() {
       match self.labels_defined.get(&label) {
         Some(&def) => {
-          let rel_distance = def - loc - StackOffset(1);
+          let rel_distance = def - loc - label.size;
           match label.size {
-            StackOffset(8) => {
+            StackOffset(1) => {
+              self.buffer[loc.0 as usize] = rel_distance.0 as u8;
             },
-            _ => {
-            },
+            _ => todo!(""),
           }
         },
         None => panic!("used undefined label {:?} at {:?}", label, loc),

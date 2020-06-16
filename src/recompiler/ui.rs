@@ -1,5 +1,6 @@
 use crate::StackOffset;
 use crate::StackOffsetType;
+use crate::Label;
 use crate::JITValue;
 use crate::X64Reg;
 use crate::EmuRegNameType;
@@ -110,5 +111,14 @@ impl Recompiler {
   pub fn addi_u32(&mut self, dest: JITValue, imm32: i32) {
     let dest_reg = self.bind_value(dest);
     trash!(self.asm.emit_addq_ir(imm32, dest_reg));
+  }
+  pub fn new_label(&mut self) -> Label {
+    self.asm.new_label()
+  }
+  pub fn define_label(&mut self, label: Label) {
+    self.asm.define_label(label);
+  }
+  pub fn jump(&mut self, label: Label) {
+    self.asm.emit_jmp_label(label);
   }
 }
