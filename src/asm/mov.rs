@@ -109,6 +109,20 @@ impl Assembler {
       }
     }
   }
+  pub fn emit_movq_rm(&mut self, src: X64Reg, ptr: X64Reg) {
+    let prefix = Assembler::REX | Assembler::REXW | Assembler::rexr(src) | Assembler::rexb(ptr);
+    self.emit_u8(prefix);
+    self.emit_u8(Assembler::MOV2);
+    if ptr.low() == 5 {
+      self.emit_u8(0x45 | src.low() << 3);
+      self.emit_u8(0x00);
+    } else {
+      self.emit_u8(src.low() << 3 | ptr.low());
+      if ptr.low() == 4 {
+        self.emit_u8(0x24);
+      }
+    }
+  }
   pub fn emit_movq_mr_offset(&mut self, ptr: X64Reg, dest: X64Reg, offset: StackOffset) {
     let offset = offset.0;
     if offset == 0 {
@@ -127,6 +141,32 @@ impl Assembler {
         },
         _ => {
           self.emit_u8(0x80 | dest.low() << 3 | ptr.low());
+          if ptr.low() == 4 {
+            self.emit_u8(0x24);
+          };
+          self.emit_u32(offset as u32);
+        },
+      }
+    }
+  }
+  pub fn emit_movq_rm_offset(&mut self, src: X64Reg, ptr: X64Reg, offset: StackOffset) {
+    let offset = offset.0;
+    if offset == 0 {
+      self.emit_movq_rm(src, ptr);
+    } else {
+      let prefix = Assembler::REX | Assembler::REXW | Assembler::rexr(src) | Assembler::rexb(ptr);
+      self.emit_u8(prefix);
+      self.emit_u8(Assembler::MOV2);
+      match offset {
+        -0x80..=0x7f => {
+          self.emit_u8(0x40 | src.low() << 3 | ptr.low());
+          if ptr.low() == 4 {
+            self.emit_u8(0x24);
+          };
+          self.emit_u8(offset as u8);
+        },
+        _ => {
+          self.emit_u8(0x80 | src.low() << 3 | ptr.low());
           if ptr.low() == 4 {
             self.emit_u8(0x24);
           };
