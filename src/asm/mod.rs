@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use crate::Label;
+use crate::StackOffset;
 use crate::X64Reg;
 
 mod ui;
@@ -5,27 +8,33 @@ mod add;
 mod bt;
 mod or;
 mod call;
+mod jmp;
 mod mov;
 mod stack;
 mod xchg;
 
 pub(super) struct Assembler {
   buffer: Vec<u8>,
+  label_counter: usize,
+  labels_used: HashMap<StackOffset, Label>,
+  labels_defined: HashMap<Label, StackOffset>,
 }
 
 impl Assembler {
   const ADD_I8: u8 = 0x83;
   const ADD_I32: u8 = 0x81;
   const ADD_EAX: u8 = 0x05;
+  const JMP: u8 = 0xeb;
+  const LABEL_PLACEHOLDER: u8 = 0xff;
   const MOD11: u8 = 0xc0;
   const MOV: u8 = 0x8b;
   const MOV2: u8 = 0x89;
+  const PUSH: u8 = 0x50;
+  const POP: u8 = 0x58;
   const REX: u8 = 0x40;
   const REXB: u8 = 0x01;
   const REXR: u8 = 0x04;
   const REXW: u8 = 0x08;
-  const PUSH: u8 = 0x50;
-  const POP: u8 = 0x58;
   const XCHG: u8 = 0x87;
   fn rexb(reg: X64Reg) -> u8 {
     match reg.is_extended() {

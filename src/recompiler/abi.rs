@@ -41,6 +41,7 @@ impl Recompiler {
     *self.alloc.native_ptrs_mut() += self.asm.emit_retq();
     #[cfg(debug_assertions)]
     assert_eq!(self.alloc.full_stack(), StackOffset(0));
+    self.asm.resolve_label_addresses();
     self.asm.assemble()
   }
   fn free_variables(&mut self) {

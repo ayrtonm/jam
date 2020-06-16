@@ -3,7 +3,9 @@ use std::mem;
 use memmap::MmapMut;
 use crate::jit_fn::JITFn;
 use crate::Direction;
+use crate::Label;
 use crate::StackOffset;
+use crate::StackOffsetType;
 use crate::Transfer;
 use crate::X64Reg;
 use crate::asm::Assembler;
@@ -11,7 +13,26 @@ use crate::asm::Assembler;
 impl Assembler {
   pub fn new() -> Self {
     let buffer = Vec::new();
-    Assembler { buffer }
+    let label_counter = 0;
+    let labels_used = Default::default();
+    let labels_defined = Default::default();
+    Assembler {
+      buffer,
+      label_counter,
+      labels_used,
+      labels_defined,
+    }
+  }
+  pub fn new_label(&mut self) -> Label {
+    let label = Label {
+      id: self.label_counter,
+      size: StackOffset(8),
+    };
+    self.label_counter += 1;
+    label
+  }
+  pub fn define_label(&mut self, label: Label) {
+    self.labels_defined.insert(label, StackOffset(self.buffer.len() as StackOffsetType));
   }
   pub fn emit_transfers(&mut self, transfers: Vec<Transfer>, stack: StackOffset) {
     for t in transfers {
@@ -28,6 +49,22 @@ impl Assembler {
           self.emit_movq_mr_offset(X64Reg::RSP, t.reg, offset);
         },
         _ => todo!("{:?} {:?}", t.dir, size),
+      }
+    }
+  }
+  pub fn resolve_label_addresses(&mut self) {
+    for (&loc, &label) in self.labels_used.iter() {
+      match self.labels_defined.get(&label) {
+        Some(&def) => {
+          let rel_distance = def - loc - StackOffset(1);
+          match label.size {
+            StackOffset(8) => {
+            },
+            _ => {
+            },
+          }
+        },
+        None => panic!("used undefined label {:?} at {:?}", label, loc),
       }
     }
   }

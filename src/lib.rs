@@ -71,6 +71,12 @@ pub enum ArgNumber {
   Arg6,
 }
 
+#[derive(Debug, PartialEq, Copy, Clone, Eq, Hash)]
+pub struct Label {
+  id: usize,
+  size: StackOffset,
+}
+
 impl std::ops::Add for StackOffset {
   type Output = Self;
   fn add(self, other: Self) -> Self {
