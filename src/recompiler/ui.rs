@@ -100,6 +100,12 @@ impl Recompiler {
       },
     }
   }
+  pub fn orv_u32(&mut self, dest: JITValue, src: JITValue) {
+    let regs = self.bind_multivalue(vec![dest, src]);
+    let dest_reg = regs[0];
+    let src_reg = regs[1];
+    self.asm.emit_orl_rr(src_reg, dest_reg);
+  }
   //TODO: handle the case where we can use emit_orl_im
   pub fn ori_u32(&mut self, dest: JITValue, imm32: u32) {
     let dest_reg = self.bind_value(dest);

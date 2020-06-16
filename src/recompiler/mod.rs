@@ -34,6 +34,15 @@ impl Recompiler {
     let position = self.alloc.full_stack();
     JITValue::Variable(Variable { position, size })
   }
+  fn bind_multivalue(&mut self, values: Vec<JITValue>) -> Vec<X64Reg> {
+    let transfers = self.alloc.bind_multivalue(&values);
+    self.asm.emit_transfers(transfers, self.alloc.full_stack());
+    let mut bound_regs = Vec::new();
+    for v in values {
+      bound_regs.push(*self.alloc.value_to_reg(&v).expect(""));
+    }
+    bound_regs
+  }
   fn bind_value(&mut self, value: JITValue) -> X64Reg {
     let transfers = self.alloc.bind_value(value);
     self.asm.emit_transfers(transfers, self.alloc.full_stack());

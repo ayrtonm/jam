@@ -44,38 +44,42 @@ impl Allocator {
     }
   }
   pub fn bind_value(&mut self, value: JITValue) -> Vec<Transfer> {
-    if !self.mappings.contains_right(&value) {
-      match self.free_regs().pop() {
-        Some(free_reg) => {
-          self.mappings.insert(free_reg, value);
-          vec![Transfer {
-            reg: free_reg,
-            value,
-            dir: Direction::LoadValue,
-          }]
-        },
-        None => {
-          //TODO: choose a better register replacement strategy
-          let replace_reg = X64Reg::RAX;
-          let old_value = *self.mappings.get_by_left(&replace_reg).expect("");
-          self.mappings.insert(replace_reg, value);
-          vec![
-            Transfer {
-              reg: replace_reg,
-              value: old_value,
-              dir: Direction::StoreValue,
-            },
-            Transfer {
-              reg: replace_reg,
-              value,
+    self.bind_multivalue(&vec![value])
+  }
+  pub fn bind_multivalue(&mut self, values: &Vec<JITValue>) -> Vec<Transfer> {
+    let mut replacement_regs = X64Reg::free_regs();
+    let mut transfers = Vec::new();
+    for &v in values {
+      if !self.mappings.contains_right(&v) {
+        match self.free_regs().pop() {
+          Some(free_reg) => {
+            self.mappings.insert(free_reg, v);
+            transfers.push(Transfer {
+              reg: free_reg,
+              value: v,
               dir: Direction::LoadValue,
-            },
-          ]
-        },
-      }
-    } else {
-      Vec::new()
-    }
+            });
+          },
+          None => {
+            //TODO: choose a better register replacement strategy
+            let replace_reg = replacement_regs.pop().expect("");
+            let old_value = *self.mappings.get_by_left(&replace_reg).expect("");
+            self.mappings.insert(replace_reg, v);
+            transfers.push(Transfer {
+                reg: replace_reg,
+                value: old_value,
+                dir: Direction::StoreValue,
+            });
+            transfers.push(Transfer {
+                reg: replace_reg,
+                value: v,
+                dir: Direction::LoadValue,
+            });
+          },
+        }
+      };
+    };
+    transfers
   }
   pub fn unbind_regs(&mut self) -> Vec<Transfer> {
     self.mappings
