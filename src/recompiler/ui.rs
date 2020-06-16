@@ -147,4 +147,10 @@ impl Recompiler {
   pub fn ret(&mut self) {
     stack!(self, self.asm.emit_retq());
   }
+  pub fn save_flags(&mut self) {
+    stack!(self, self.asm.emit_pushfq());
+  }
+  pub fn load_flags(&mut self) {
+    stack!(self, self.asm.emit_popfq());
+  }
 }

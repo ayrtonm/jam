@@ -19,10 +19,12 @@ impl Assembler {
     self.emit_u8(Assembler::POP | reg.low());
     StackOffset(-8)
   }
-  pub fn emit_pushfq(&mut self) {
+  pub fn emit_pushfq(&mut self) -> StackOffset {
     self.emit_u8(0x9c);
+    StackOffset(4)
   }
-  pub fn emit_popfq(&mut self) {
+  pub fn emit_popfq(&mut self) -> StackOffset {
     self.emit_u8(0x9d);
+    StackOffset(-4)
   }
 }
