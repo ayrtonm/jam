@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use crate::Label;
 use crate::StackOffset;
+use crate::StackOffsetType;
 use crate::X64Reg;
 
 mod ui;
@@ -24,6 +25,7 @@ impl Assembler {
   const ADD_I8: u8 = 0x83;
   const ADD_I32: u8 = 0x81;
   const ADD_EAX: u8 = 0x05;
+  const CALL: u8 = 0xe8;
   const JMP: u8 = 0xeb;
   const JC: u8 = 0x72;
   const JNC: u8 = 0x73;
@@ -38,6 +40,23 @@ impl Assembler {
   const REXR: u8 = 0x04;
   const REXW: u8 = 0x08;
   const XCHG: u8 = 0x87;
+  fn emit_label(&mut self, label: Label) {
+    let location = StackOffset(self.buffer.len() as StackOffsetType);
+    match label.size {
+      StackOffset(1) => {
+        self.labels_used.insert(location, label);
+        self.emit_u8(Assembler::LABEL_PLACEHOLDER);
+      },
+      StackOffset(4) => {
+        self.labels_used.insert(location, label);
+        self.emit_u8(Assembler::LABEL_PLACEHOLDER);
+        self.emit_u8(Assembler::LABEL_PLACEHOLDER);
+        self.emit_u8(Assembler::LABEL_PLACEHOLDER);
+        self.emit_u8(Assembler::LABEL_PLACEHOLDER);
+      },
+      _ => unreachable!(""),
+    }
+  }
   fn rexb(reg: X64Reg) -> u8 {
     match reg.is_extended() {
       true => Assembler::REXB,

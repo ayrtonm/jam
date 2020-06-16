@@ -11,11 +11,19 @@ impl Recompiler {
   pub fn debug(&self) {
     self.alloc.debug();
   }
+  pub fn call_label(&mut self, label: Label) {
+    self.sysv_caller_prologue();
+    let misalignment = self.alloc.full_stack().0 % 16;
+    let align = 16 - misalignment;
+    stack!(self, self.asm.emit_addq_ir(-align, X64Reg::RSP));
+    stack!(self, self.asm.emit_call_label(label));
+    stack!(self, self.asm.emit_addq_ir(align, X64Reg::RSP));
+    self.sysv_caller_epilogue();
+  }
   pub fn call_ptr(&mut self, ptr_idx: usize) {
     self.sysv_caller_prologue();
     let misalignment = self.alloc.full_stack().0 % 16;
     let align = 16 - misalignment;
-    println!("{}", misalignment);
     stack!(self, self.asm.emit_addq_ir(-align, X64Reg::RSP));
     let offset = self.alloc.ptr_position(ptr_idx);
     trash!(self.asm.emit_callq_m_offset(X64Reg::RSP, offset));
@@ -115,6 +123,9 @@ impl Recompiler {
   pub fn new_label(&mut self) -> Label {
     self.asm.new_label()
   }
+  pub fn new_long_label(&mut self) -> Label {
+    self.asm.new_long_label()
+  }
   pub fn define_label(&mut self, label: Label) {
     self.asm.define_label(label);
   }
@@ -126,5 +137,8 @@ impl Recompiler {
   }
   pub fn jump_if_no_carry(&mut self, label: Label) {
     self.asm.emit_jnc_label(label);
+  }
+  pub fn ret(&mut self) {
+    stack!(self, self.asm.emit_retq());
   }
 }

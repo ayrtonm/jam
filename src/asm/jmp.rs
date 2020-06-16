@@ -13,11 +13,6 @@ impl Assembler {
     self.emit_u8(Assembler::JMP);
     self.emit_label(label);
   }
-  pub fn emit_label(&mut self, label: Label) {
-    let location = StackOffset(self.buffer.len() as StackOffsetType);
-    self.labels_used.insert(location, label);
-    self.emit_u8(Assembler::LABEL_PLACEHOLDER);
-  }
   pub fn emit_jc_rel8(&mut self, offset: i8) {
     self.emit_u8(Assembler::JC);
     self.emit_u8(offset as u8);

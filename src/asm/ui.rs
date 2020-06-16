@@ -31,6 +31,14 @@ impl Assembler {
     self.label_counter += 1;
     label
   }
+  pub fn new_long_label(&mut self) -> Label {
+    let label = Label {
+      id: self.label_counter,
+      size: StackOffset(4),
+    };
+    self.label_counter += 1;
+    label
+  }
   pub fn define_label(&mut self, label: Label) {
     self.labels_defined.insert(label, StackOffset(self.buffer.len() as StackOffsetType));
   }
@@ -65,6 +73,12 @@ impl Assembler {
           match label.size {
             StackOffset(1) => {
               self.buffer[loc.0 as usize] = rel_distance.0 as u8;
+            },
+            StackOffset(4) => {
+              self.buffer[loc.0 as usize] = (rel_distance.0 & 0xff) as u8;
+              self.buffer[loc.0 as usize + 1] = ((rel_distance.0 >> 8) & 0xff) as u8;
+              self.buffer[loc.0 as usize + 2] = ((rel_distance.0 >> 16) & 0xff) as u8;
+              self.buffer[loc.0 as usize + 3] = ((rel_distance.0 >> 24) & 0xff) as u8;
             },
             _ => todo!(""),
           }

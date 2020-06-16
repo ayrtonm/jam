@@ -1,3 +1,4 @@
+use crate::Label;
 use crate::StackOffset;
 use crate::X64Reg;
 use crate::asm::Assembler;
@@ -48,6 +49,11 @@ impl Assembler {
       }
       StackOffset(8)
     }
+  }
+  pub fn emit_call_label(&mut self, label: Label) -> StackOffset {
+    self.emit_u8(Assembler::CALL);
+    self.emit_label(label);
+    StackOffset(8)
   }
   pub fn emit_retq(&mut self) -> StackOffset {
     self.emit_u8(0xc3);
