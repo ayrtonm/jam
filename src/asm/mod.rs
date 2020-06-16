@@ -2,6 +2,7 @@ use crate::X64Reg;
 
 mod ui;
 mod add;
+mod or;
 mod call;
 mod mov;
 mod stack;

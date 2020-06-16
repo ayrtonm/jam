@@ -30,6 +30,10 @@ fn main() {
   rc.call_ptr(3);
   rc.load_ptr(r8, 2);
   rc.deref_u32(r8);
+  let r2 = rc.reg(2).unwrap();
+  let r3 = rc.reg(3).unwrap();
+  rc.setv_u32(r2, r8);
+  rc.seti_u32(r3, 0xf0f0_0f0f);
   let jitfn = rc.compile().unwrap();
   assert_eq!(mips_registers[1], 0xdead_beef);
   jitfn.run();

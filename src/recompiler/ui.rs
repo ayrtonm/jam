@@ -59,7 +59,11 @@ impl Recompiler {
     let reg = self.bind_value(value);
     self.asm.emit_movq_mr(reg, reg);
   }
-  pub fn set_u32(&mut self, dest: JITValue, src: JITValue) {
+  pub fn seti_u32(&mut self, dest: JITValue, src: u32) {
+    let dest_reg = self.bind_value(dest);
+    self.asm.emit_movl_ir(src, dest_reg);
+  }
+  pub fn setv_u32(&mut self, dest: JITValue, src: JITValue) {
     let dest_reg = self.bind_value(dest);
     match self.alloc.value_to_reg(&src) {
       Some(&src_reg) => {
@@ -84,5 +88,9 @@ impl Recompiler {
         self.asm.emit_movq_mr_offset(X64Reg::RSP, arg_reg, offset);
       },
     }
+  }
+  pub fn ori_u32(&mut self, dest: JITValue, imm32: u32) {
+    let dest_reg = self.bind_value(dest);
+    self.asm.emit_orl_ir(imm32, dest_reg);
   }
 }
