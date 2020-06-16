@@ -23,6 +23,9 @@ impl Allocator {
       println!("{:?}", i);
     }
   }
+  //TODO: prioritize registers to improve the replacement strategy
+  //e.g. leave rdi, rsi, rdx for last since they function arguments
+  //also leave r8-r15 for last since they may require instruction prefixes
   fn free_regs(&self) -> Vec<X64Reg> {
     let all_regs = X64Reg::free_regs().into_iter().collect::<HashSet<_>>();
     let used_regs = self.mappings.left_values().cloned().collect::<HashSet<_>>();
@@ -46,8 +49,19 @@ impl Allocator {
   pub fn bind_value(&mut self, value: JITValue) -> Vec<Transfer> {
     self.bind_multivalue(&vec![value])
   }
+  //TODO: see todo on Allocator::free_regs
   pub fn bind_multivalue(&mut self, values: &Vec<JITValue>) -> Vec<Transfer> {
-    let mut replacement_regs = X64Reg::free_regs();
+    let preserve_regs = values.iter()
+                              .map(|v| self.mappings.get_by_right(v))
+                              .filter(|r| r.is_some())
+                              .map(|o| o.expect(""))
+                              .cloned()
+                              .collect::<HashSet<_>>();
+    let all_regs = X64Reg::free_regs().into_iter()
+                                      .collect::<HashSet<_>>();
+    let mut replacement_regs = all_regs.difference(&preserve_regs)
+                                       .cloned()
+                                       .collect::<Vec<_>>();
     let mut transfers = Vec::new();
     for &v in values {
       if !self.mappings.contains_right(&v) {
@@ -61,7 +75,6 @@ impl Allocator {
             });
           },
           None => {
-            //TODO: choose a better register replacement strategy
             let replace_reg = replacement_regs.pop().expect("");
             let old_value = *self.mappings.get_by_left(&replace_reg).expect("");
             self.mappings.insert(replace_reg, v);

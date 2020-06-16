@@ -62,6 +62,12 @@ impl Recompiler {
     let reg = self.bind_value(value);
     self.asm.emit_movl_mr_offset(reg, reg, StackOffset(idx * 4));
   }
+  pub fn index_mut_u32(&mut self, ptr: JITValue, result: JITValue, idx: StackOffsetType) {
+    let regs = self.bind_multivalue(vec![ptr, result]);
+    let ptr_reg = regs[0];
+    let result_reg = regs[1];
+    self.asm.emit_movl_rm_offset(result_reg, ptr_reg, StackOffset(idx * 4));
+  }
   pub fn deref_u32(&mut self, value: JITValue) {
     let reg = self.bind_value(value);
     self.asm.emit_movl_mr(reg, reg);
