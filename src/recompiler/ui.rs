@@ -12,13 +12,7 @@ impl Recompiler {
     self.alloc.debug();
   }
   pub fn call_label(&mut self, label: Label) {
-    self.sysv_caller_prologue();
-    let misalignment = self.alloc.full_stack().0 % 16;
-    let align = 16 - misalignment;
-    stack!(self, self.asm.emit_addq_ir(-align, X64Reg::RSP));
     stack!(self, self.asm.emit_call_label(label));
-    stack!(self, self.asm.emit_addq_ir(align, X64Reg::RSP));
-    self.sysv_caller_epilogue();
   }
   pub fn call_ptr(&mut self, ptr_idx: usize) {
     self.sysv_caller_prologue();
