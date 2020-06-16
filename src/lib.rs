@@ -9,13 +9,13 @@ mod asm;
 type PtrType = u64;
 //added/subtracted to/from %rsp
 type StackOffsetType = i32;
-#[derive(Debug, PartialEq, Copy, Clone, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 #[must_use]
 struct StackOffset(StackOffsetType);
 
 //used to build x86-64 machine code buffer in Assembler
 #[repr(u8)]
-#[derive(Debug, PartialEq, Copy, Clone, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 enum X64Reg {
   RAX, RCX, RDX, RBX,
   RSP, RBP, RSI, RDI,
@@ -25,43 +25,41 @@ enum X64Reg {
 
 //typically obtained from emulator opcodes
 type EmuRegNameType = u32;
-#[derive(Debug, PartialEq, Copy, Clone, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 struct EmuRegName(EmuRegNameType);
 
-#[derive(Debug, PartialEq, Copy, Clone, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 pub struct EmuReg {
   name: EmuRegName,
   position: StackOffset,
   size: StackOffset,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 pub struct Variable {
   position: StackOffset,
   size: StackOffset,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 #[must_use]
 pub enum JITValue {
   EmuReg(EmuReg),
   Variable(Variable),
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Eq, Hash)]
+#[derive(Debug, Copy, Clone)]
 enum Direction {
   LoadValue,
   StoreValue,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Eq, Hash)]
 struct Transfer {
   reg: X64Reg,
   value: JITValue,
   dir: Direction,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Eq, Hash)]
 pub enum ArgNumber {
   Arg1,
   Arg2,
@@ -71,7 +69,7 @@ pub enum ArgNumber {
   Arg6,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 #[must_use]
 pub struct Label {
   id: usize,
