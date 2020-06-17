@@ -1,8 +1,5 @@
 use crate::asm::Assembler;
 use crate::Label;
-use crate::StackOffset;
-use crate::StackOffsetType;
-use crate::X64Reg;
 
 impl Assembler {
   pub fn emit_jmp_rel8(&mut self, offset: i8) {
