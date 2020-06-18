@@ -2,6 +2,7 @@ use std::collections::HashSet;
 use crate::X64Reg;
 use crate::JITValue;
 use crate::Transfer;
+use crate::MultiTransfer;
 use crate::Direction;
 use crate::alloc::Allocator;
 
@@ -34,7 +35,8 @@ impl Allocator {
   pub fn value_to_reg(&self, value: &JITValue) -> Option<&X64Reg> {
     self.mappings.get_by_right(value)
   }
-  pub fn bind(&mut self, value: JITValue, reg: X64Reg) -> Vec<Transfer> {
+  //FIXME: this doesn't seem to emit the transfer to move value to reg
+  pub fn bind(&mut self, value: JITValue, reg: X64Reg) -> MultiTransfer {
     match self.mappings.get_by_left(&reg) {
       Some(&prev_value) => {
         self.mappings.insert(reg, value);
@@ -42,15 +44,15 @@ impl Allocator {
       },
       None => {
         self.mappings.insert(reg, value);
-        Vec::new()
+        MultiTransfer(Vec::new())
       },
     }
   }
-  pub fn bind_value(&mut self, value: JITValue) -> Vec<Transfer> {
+  pub fn bind_value(&mut self, value: JITValue) -> MultiTransfer {
     self.bind_multivalue(&vec![value])
   }
   //TODO: see todo on Allocator::free_regs
-  pub fn bind_multivalue(&mut self, values: &Vec<JITValue>) -> Vec<Transfer> {
+  pub fn bind_multivalue(&mut self, values: &Vec<JITValue>) -> MultiTransfer {
     let preserve_regs = values.iter()
                               .map(|v| self.mappings.get_by_right(v))
                               .filter(|r| r.is_some())
@@ -92,10 +94,10 @@ impl Allocator {
         }
       };
     };
-    transfers
+    MultiTransfer(transfers)
   }
-  pub fn unbind_regs(&mut self) -> Vec<Transfer> {
-    self.mappings
+  pub fn unbind_regs(&mut self) -> MultiTransfer {
+    MultiTransfer(self.mappings
         .iter()
         .filter(|(_, &v)| {
           match v {
@@ -110,7 +112,7 @@ impl Allocator {
             dir: Direction::StoreValue,
           }
         })
-        .collect()
+        .collect())
   }
   pub fn swap_bindings(&mut self, reg1: X64Reg, reg2: X64Reg) {
     let val1 = self.mappings.get_by_left(&reg1).map(|&v| v);

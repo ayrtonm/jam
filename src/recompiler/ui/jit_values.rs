@@ -73,9 +73,11 @@ impl Recompiler {
         self.asm.emit_xchgq_rr(value_reg, arg_reg);
       },
       None => {
-        self.alloc.bind(value, arg_reg);
+        let transfers = self.alloc.bind(value, arg_reg);
+        println!("{:?}", transfers);
+        self.asm.emit_transfers(transfers, self.alloc.full_stack());
         let offset = self.alloc.value_position(&value);
-        self.asm.emit_movq_mr_offset(X64Reg::RSP, arg_reg, offset);
+        self.asm.emit_movl_mr_offset(X64Reg::RSP, arg_reg, offset);
       },
     }
   }

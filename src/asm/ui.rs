@@ -7,6 +7,7 @@ use crate::Label;
 use crate::StackOffset;
 use crate::StackOffsetType;
 use crate::Transfer;
+use crate::MultiTransfer;
 use crate::X64Reg;
 use crate::asm::Assembler;
 
@@ -47,7 +48,8 @@ impl Assembler {
     self.define_label(label);
     label
   }
-  pub fn emit_transfers(&mut self, transfers: Vec<Transfer>, stack: StackOffset) {
+  pub fn emit_transfers(&mut self, transfers: MultiTransfer, stack: StackOffset) {
+    let transfers = transfers.0;
     for t in transfers {
       let size = t.value.size();
       let offset = stack - t.value.position();

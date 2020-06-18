@@ -54,11 +54,17 @@ enum Direction {
   StoreValue,
 }
 
+#[derive(Debug)]
+#[must_use]
 struct Transfer {
   reg: X64Reg,
   value: JITValue,
   dir: Direction,
 }
+
+#[derive(Debug)]
+#[must_use]
+struct MultiTransfer(Vec<Transfer>);
 
 pub enum ArgNumber {
   Arg1,
