@@ -7,11 +7,14 @@ use crate::X64Reg;
 mod ui;
 mod add;
 mod bt;
-mod or;
 mod call;
+mod cmp;
+mod flags;
 mod jmp;
 mod mov;
+mod or;
 mod stack;
+mod test;
 mod xchg;
 
 pub(super) struct Assembler {
@@ -26,9 +29,13 @@ impl Assembler {
   const ADD_I32: u8 = 0x81;
   const ADD_EAX: u8 = 0x05;
   const CALL: u8 = 0xe8;
+  const CLC: u8 = 0xf8;
+  const CMP: u8 = 0x39;
   const JMP: u8 = 0xeb;
   const JC: u8 = 0x72;
   const JNC: u8 = 0x73;
+  const JE: u8 = 0x74;
+  const JNE: u8 = 0x75;
   const LABEL_PLACEHOLDER: u8 = 0xff;
   const MOD11: u8 = 0xc0;
   const MOV: u8 = 0x8b;
@@ -39,6 +46,7 @@ impl Assembler {
   const REXB: u8 = 0x01;
   const REXR: u8 = 0x04;
   const REXW: u8 = 0x08;
+  const STC: u8 = 0xf9;
   const XCHG: u8 = 0x87;
   fn emit_label(&mut self, label: Label) {
     let location = StackOffset(self.buffer.len() as StackOffsetType);

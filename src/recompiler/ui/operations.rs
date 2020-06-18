@@ -17,9 +17,20 @@ impl Recompiler {
     let reg = self.bind_value(value);
     self.asm.emit_btl_ir(imm5, reg);
   }
-  //TODO: replace addq with addl
   pub fn addi_u32(&mut self, dest: JITValue, imm32: i32) {
     let dest_reg = self.bind_value(dest);
-    trash!(self.asm.emit_addq_ir(imm32, dest_reg));
+    trash!(self.asm.emit_addl_ir(imm32, dest_reg));
+  }
+  pub fn cmpv_u32(&mut self, value1: JITValue, value2: JITValue) {
+    let regs = self.bind_multivalue(vec![value1, value2]);
+    let value1_reg = regs[0];
+    let value2_reg = regs[1];
+    self.asm.emit_cmpl_rr(value1_reg, value2_reg);
+  }
+  pub fn testv_u32(&mut self, value1: JITValue, value2: JITValue) {
+    let regs = self.bind_multivalue(vec![value1, value2]);
+    let value1_reg = regs[0];
+    let value2_reg = regs[1];
+    self.asm.emit_testl_rr(value1_reg, value2_reg);
   }
 }

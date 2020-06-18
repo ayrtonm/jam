@@ -45,13 +45,13 @@ impl Recompiler {
   pub fn jump_if_no_carry(&mut self, label: Label) {
     self.asm.emit_jnc_label(label);
   }
+  pub fn jump_if_zero(&mut self, label: Label) {
+    self.asm.emit_je_label(label);
+  }
+  pub fn jump_if_not_zero(&mut self, label: Label) {
+    self.asm.emit_jne_label(label);
+  }
   pub fn ret(&mut self) {
     stack!(self, self.asm.emit_retq());
-  }
-  pub fn save_flags(&mut self) {
-    stack!(self, self.asm.emit_pushfq());
-  }
-  pub fn load_flags(&mut self) {
-    stack!(self, self.asm.emit_popfq());
   }
 }
