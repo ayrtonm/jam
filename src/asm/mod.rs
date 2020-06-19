@@ -36,18 +36,21 @@ impl Assembler {
   const JNC: u8 = 0x73;
   const JE: u8 = 0x74;
   const JNE: u8 = 0x75;
-  const LABEL_PLACEHOLDER: u8 = 0xff;
-  const MOD11: u8 = 0xc0;
+  //FIXME: use more descriptive names for mov
   const MOV: u8 = 0x8b;
   const MOV2: u8 = 0x89;
   const PUSH: u8 = 0x50;
   const POP: u8 = 0x58;
+  const STC: u8 = 0xf9;
+  const TEST: u8 = 0x85;
+  const XCHG: u8 = 0x87;
+
+  const MOD11: u8 = 0xc0;
   const REX: u8 = 0x40;
   const REXB: u8 = 0x01;
   const REXR: u8 = 0x04;
   const REXW: u8 = 0x08;
-  const STC: u8 = 0xf9;
-  const XCHG: u8 = 0x87;
+  const LABEL_PLACEHOLDER: u8 = 0xff;
   fn emit_label(&mut self, label: Label) {
     let location = StackOffset(self.buffer.len() as StackOffsetType);
     match label.size {

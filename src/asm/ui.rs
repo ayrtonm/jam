@@ -92,7 +92,7 @@ impl Assembler {
               self.buffer[loc.0 as usize + 2] = ((rel_distance.0 >> 16) & 0xff) as u8;
               self.buffer[loc.0 as usize + 3] = ((rel_distance.0 >> 24) & 0xff) as u8;
             },
-            _ => todo!(""),
+            _ => unreachable!("Unknown label size"),
           }
         },
         None => panic!("used undefined label {:?} at {:?}", label, loc),
