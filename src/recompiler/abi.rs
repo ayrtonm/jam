@@ -33,8 +33,7 @@ impl Recompiler {
   }
   pub fn compile(mut self) -> io::Result<JITFn> {
     self.free_variables();
-    let transfers = self.alloc.unbind_regs();
-    self.asm.emit_transfers(transfers, self.alloc.full_stack());
+    bind!(self, self.alloc.unbind_emu_regs());
     self.save_emu_regs();
     self.free_pointers();
     self.sysv_callee_epilogue();

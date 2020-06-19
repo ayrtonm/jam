@@ -5,7 +5,7 @@ use crate::JITValue;
 use crate::StackOffset;
 use crate::StackOffsetType;
 
-mod binding;
+mod bind;
 
 pub(super) struct Allocator {
   mappings: BiHashMap<X64Reg, JITValue>,

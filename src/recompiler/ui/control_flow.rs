@@ -42,7 +42,7 @@ impl Recompiler {
   pub fn jump_if_carry(&mut self, label: Label) {
     self.asm.emit_jc_label(label);
   }
-  pub fn jump_if_no_carry(&mut self, label: Label) {
+  pub fn jump_if_not_carry(&mut self, label: Label) {
     self.asm.emit_jnc_label(label);
   }
   pub fn jump_if_zero(&mut self, label: Label) {

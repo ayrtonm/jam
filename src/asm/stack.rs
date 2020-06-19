@@ -21,10 +21,10 @@ impl Assembler {
   }
   pub fn emit_pushfq(&mut self) -> StackOffset {
     self.emit_u8(0x9c);
-    StackOffset(4)
+    StackOffset(8)
   }
   pub fn emit_popfq(&mut self) -> StackOffset {
     self.emit_u8(0x9d);
-    StackOffset(-4)
+    StackOffset(-8)
   }
 }

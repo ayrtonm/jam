@@ -65,20 +65,33 @@ impl Recompiler {
       },
     }
   }
-  pub fn set_argn(&mut self, value: JITValue, n: ArgNumber) {
+  fn set_argn(&mut self, value: JITValue, n: ArgNumber) {
     let arg_reg = X64Reg::argn_reg(n);
-    match self.alloc.value_to_reg(&value) {
+    bind!(self, match self.alloc.value_to_reg(&value) {
       Some(&value_reg) => {
-        self.alloc.swap_bindings(value_reg, arg_reg);
-        self.asm.emit_xchgq_rr(value_reg, arg_reg);
+        self.alloc.swap_bindings(value_reg, arg_reg)
       },
       None => {
-        let transfers = self.alloc.bind(value, arg_reg);
-        println!("{:?}", transfers);
-        self.asm.emit_transfers(transfers, self.alloc.full_stack());
-        let offset = self.alloc.value_position(&value);
-        self.asm.emit_movl_mr_offset(X64Reg::RSP, arg_reg, offset);
+        self.alloc.bind_specific_reg(value, arg_reg)
       },
-    }
+    })
+  }
+  pub fn set_arg1(&mut self, value: JITValue) {
+    self.set_argn(value, ArgNumber::Arg1);
+  }
+  pub fn set_arg2(&mut self, value: JITValue) {
+    self.set_argn(value, ArgNumber::Arg2);
+  }
+  pub fn set_arg3(&mut self, value: JITValue) {
+    self.set_argn(value, ArgNumber::Arg3);
+  }
+  pub fn set_arg4(&mut self, value: JITValue) {
+    self.set_argn(value, ArgNumber::Arg4);
+  }
+  pub fn set_arg5(&mut self, value: JITValue) {
+    self.set_argn(value, ArgNumber::Arg5);
+  }
+  pub fn set_arg6(&mut self, value: JITValue) {
+    self.set_argn(value, ArgNumber::Arg6);
   }
 }

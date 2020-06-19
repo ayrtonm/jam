@@ -9,6 +9,7 @@ use crate::StackOffsetType;
 use crate::Transfer;
 use crate::MultiTransfer;
 use crate::X64Reg;
+use crate::GenericValue;
 use crate::asm::Assembler;
 
 impl Assembler {
@@ -48,25 +49,31 @@ impl Assembler {
     self.define_label(label);
     label
   }
+  //FIXME: refactor this
   pub fn emit_transfers(&mut self, transfers: MultiTransfer, stack: StackOffset) {
     let transfers = transfers.0;
     for t in transfers {
-      let size = t.value.size();
-      let offset = stack - t.value.position();
-      match (t.dir, size) {
-        (Direction::LoadValue, StackOffset(4)) => {
-          self.emit_movl_mr_offset(X64Reg::RSP, t.reg, offset);
+      match t.other {
+        GenericValue::JITValue(other) => {
+          let size = other.size();
+          let offset = stack - other.position();
+          match (t.dir, size) {
+            (Direction::ToReg, StackOffset(4)) => {
+              self.emit_movl_mr_offset(X64Reg::RSP, t.reg, offset);
+            },
+            (Direction::FromReg, StackOffset(4)) => {
+              self.emit_movl_rm_offset(t.reg, X64Reg::RSP, offset);
+            },
+            (Direction::ToReg, StackOffset(8)) => {
+              self.emit_movq_mr_offset(X64Reg::RSP, t.reg, offset);
+            },
+            (Direction::FromReg, StackOffset(8)) => {
+              self.emit_movq_rm_offset(t.reg, X64Reg::RSP, offset);
+            },
+            _ => todo!("{:?} {:?}", t.dir, size),
+          }
         },
-        (Direction::StoreValue, StackOffset(4)) => {
-          self.emit_movl_rm_offset(t.reg, X64Reg::RSP, offset);
-        },
-        (Direction::LoadValue, StackOffset(8)) => {
-          self.emit_movq_mr_offset(X64Reg::RSP, t.reg, offset);
-        },
-        (Direction::StoreValue, StackOffset(8)) => {
-          self.emit_movq_rm_offset(t.reg, X64Reg::RSP, offset);
-        },
-        _ => todo!("{:?} {:?}", t.dir, size),
+        GenericValue::X64Reg(other_reg) => self.emit_xchgq_rr(t.reg, other_reg),
       }
     }
   }

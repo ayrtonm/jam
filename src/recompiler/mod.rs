@@ -20,6 +20,14 @@ macro_rules! trash {
   }
 }
 
+macro_rules! bind {
+  ($self:expr, $transfers:expr) => {
+    {
+      $self.asm.emit_transfers($transfers, $self.alloc.full_stack());
+    }
+  }
+}
+
 mod abi;
 mod ui;
 
@@ -35,8 +43,7 @@ impl Recompiler {
     JITValue::Variable(Variable { position, size })
   }
   fn bind_multivalue(&mut self, values: Vec<JITValue>) -> Vec<X64Reg> {
-    let transfers = self.alloc.bind_multivalue(&values);
-    self.asm.emit_transfers(transfers, self.alloc.full_stack());
+    bind!(self, self.alloc.bind_multivalue(&values));
     let mut bound_regs = Vec::new();
     for v in values {
       bound_regs.push(*self.alloc.value_to_reg(&v).expect(""));
@@ -44,8 +51,7 @@ impl Recompiler {
     bound_regs
   }
   fn bind_value(&mut self, value: JITValue) -> X64Reg {
-    let transfers = self.alloc.bind_value(value);
-    self.asm.emit_transfers(transfers, self.alloc.full_stack());
+    bind!(self, self.alloc.bind_value(value));
     *self.alloc.value_to_reg(&value).expect("")
   }
   fn sysv_caller_prologue(&mut self) {

@@ -41,6 +41,12 @@ pub struct Variable {
   size: StackOffset,
 }
 
+#[derive(Debug)]
+enum GenericValue {
+  JITValue(JITValue),
+  X64Reg(X64Reg)
+}
+
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 #[must_use]
 pub enum JITValue {
@@ -50,15 +56,15 @@ pub enum JITValue {
 
 #[derive(Debug, Copy, Clone)]
 enum Direction {
-  LoadValue,
-  StoreValue,
+  ToReg,
+  FromReg,
 }
 
 #[derive(Debug)]
 #[must_use]
 struct Transfer {
   reg: X64Reg,
-  value: JITValue,
+  other: GenericValue,
   dir: Direction,
 }
 
@@ -66,7 +72,7 @@ struct Transfer {
 #[must_use]
 struct MultiTransfer(Vec<Transfer>);
 
-pub enum ArgNumber {
+enum ArgNumber {
   Arg1,
   Arg2,
   Arg3,
@@ -126,10 +132,12 @@ impl X64Reg {
     self.high() != 0
   }
   pub fn all_regs() -> Vec<X64Reg> {
-    vec![X64Reg::RAX, X64Reg::RCX, X64Reg::RDX, X64Reg::RBX,
-         X64Reg::RSP, X64Reg::RBP, X64Reg::RSI, X64Reg::RDI,
+    vec![
+         X64Reg::RAX, X64Reg::RCX, X64Reg::RBP, X64Reg::RBX,
          X64Reg::R8,  X64Reg::R9,  X64Reg::R10, X64Reg::R11,
-         X64Reg::R12, X64Reg::R13, X64Reg::R14, X64Reg::R15]
+         X64Reg::R12, X64Reg::R13, X64Reg::R14, X64Reg::R15,
+         X64Reg::RSP, X64Reg::RDX, X64Reg::RSI, X64Reg::RDI,
+       ]
   }
   pub fn free_regs() -> Vec<X64Reg> {
     X64Reg::all_regs().into_iter().filter(|&r| r != X64Reg::RSP).collect()
