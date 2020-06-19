@@ -3,6 +3,16 @@ use crate::StackOffset;
 use crate::X64Reg;
 
 impl Assembler {
+  pub fn emit_addl_rr(&mut self, src: X64Reg, dest: X64Reg) {
+    //let's avoid this since it would give a StackOffset that varies at JIT-runtime
+    assert!(src != X64Reg::RSP);
+    self.emit_cond_rexrb(src, dest);
+    self.emit_add_rr(src, dest);
+  }
+  pub fn emit_add_rr(&mut self, src: X64Reg, dest: X64Reg) {
+    self.buffer.push(Assembler::ADD_R);
+    self.buffer.push(Assembler::MOD11 | src.low() << 3 | dest.low());
+  }
   pub fn emit_addl_ir(&mut self, imm32: i32, reg: X64Reg) -> StackOffset {
     self.emit_cond_rexb(reg);
     self.emit_add_ir(imm32, reg)

@@ -25,6 +25,7 @@ pub(super) struct Assembler {
 }
 
 impl Assembler {
+  const ADD_R: u8 = 0x01;
   const ADD_I8: u8 = 0x83;
   const ADD_I32: u8 = 0x81;
   const ADD_EAX: u8 = 0x05;
