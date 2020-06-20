@@ -42,4 +42,14 @@ impl Assembler {
     self.emit_u8(Assembler::JNE);
     self.emit_label(label);
   }
+  pub fn emit_jc_rel32(&mut self, offset: i32) {
+    self.emit_u8(0x0f);
+    self.emit_u8(Assembler::JC_LONG);
+    self.emit_u32(offset as u32);
+  }
+  pub fn emit_jc_long_label(&mut self, label: Label) {
+    self.emit_u8(0x0f);
+    self.emit_u8(Assembler::JC_LONG);
+    self.emit_label(label);
+  }
 }

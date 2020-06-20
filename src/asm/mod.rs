@@ -34,6 +34,7 @@ impl Assembler {
   const CMP: u8 = 0x39;
   const JMP: u8 = 0xeb;
   const JC: u8 = 0x72;
+  const JC_LONG: u8 = 0x82;
   const JNC: u8 = 0x73;
   const JE: u8 = 0x74;
   const JNE: u8 = 0x75;
