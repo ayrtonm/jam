@@ -3,7 +3,6 @@ use crate::StackOffsetType;
 use crate::JITValue;
 use crate::X64Reg;
 use crate::EmuRegNameType;
-use crate::ArgNumber;
 use crate::recompiler::Recompiler;
 
 impl Recompiler {
@@ -51,7 +50,14 @@ impl Recompiler {
   }
   pub fn seti_u32(&mut self, dest: JITValue, src: u32) {
     let dest_reg = self.bind_value(dest);
-    self.asm.emit_movl_ir(src, dest_reg);
+    match src {
+      0 => {
+        self.asm.emit_xorl_rr(dest_reg, dest_reg);
+      },
+      _ => {
+        self.asm.emit_movl_ir(src, dest_reg);
+      },
+    }
   }
   pub fn setv_u32(&mut self, dest: JITValue, src: JITValue) {
     let dest_reg = self.bind_value(dest);
@@ -64,34 +70,5 @@ impl Recompiler {
         self.asm.emit_movl_mr_offset(X64Reg::RSP, dest_reg, offset);
       },
     }
-  }
-  fn set_argn(&mut self, value: JITValue, n: ArgNumber) {
-    let arg_reg = X64Reg::argn_reg(n);
-    bind!(self, match self.alloc.value_to_reg(&value) {
-      Some(&value_reg) => {
-        self.alloc.swap_bindings(value_reg, arg_reg)
-      },
-      None => {
-        self.alloc.bind_specific_reg(value, arg_reg)
-      },
-    })
-  }
-  pub fn set_arg1(&mut self, value: JITValue) {
-    self.set_argn(value, ArgNumber::Arg1);
-  }
-  pub fn set_arg2(&mut self, value: JITValue) {
-    self.set_argn(value, ArgNumber::Arg2);
-  }
-  pub fn set_arg3(&mut self, value: JITValue) {
-    self.set_argn(value, ArgNumber::Arg3);
-  }
-  pub fn set_arg4(&mut self, value: JITValue) {
-    self.set_argn(value, ArgNumber::Arg4);
-  }
-  pub fn set_arg5(&mut self, value: JITValue) {
-    self.set_argn(value, ArgNumber::Arg5);
-  }
-  pub fn set_arg6(&mut self, value: JITValue) {
-    self.set_argn(value, ArgNumber::Arg6);
   }
 }

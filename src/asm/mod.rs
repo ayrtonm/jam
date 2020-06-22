@@ -16,6 +16,7 @@ mod or;
 mod stack;
 mod test;
 mod xchg;
+mod xor;
 
 pub(super) struct Assembler {
   buffer: Vec<u8>,
@@ -46,6 +47,7 @@ impl Assembler {
   const STC: u8 = 0xf9;
   const TEST: u8 = 0x85;
   const XCHG: u8 = 0x87;
+  const XOR: u8 = 0x31;
 
   const MOD11: u8 = 0xc0;
   const REX: u8 = 0x40;

@@ -6,7 +6,6 @@ use crate::Direction;
 use crate::Label;
 use crate::StackOffset;
 use crate::StackOffsetType;
-use crate::Transfer;
 use crate::MultiTransfer;
 use crate::X64Reg;
 use crate::GenericValue;
@@ -88,7 +87,6 @@ impl Assembler {
               self.buffer[loc.0 as usize] = rel_distance.0 as u8;
             },
             StackOffset(4) => {
-              println!("{:#?}", rel_distance);
               self.buffer[loc.0 as usize] = (rel_distance.0 & 0xff) as u8;
               self.buffer[loc.0 as usize + 1] = ((rel_distance.0 >> 8) & 0xff) as u8;
               self.buffer[loc.0 as usize + 2] = ((rel_distance.0 >> 16) & 0xff) as u8;

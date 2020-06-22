@@ -1,4 +1,5 @@
 use crate::Label;
+use crate::StackOffset;
 use crate::JITValue;
 use crate::X64Reg;
 use crate::recompiler::Recompiler;
@@ -40,7 +41,11 @@ impl Recompiler {
     self.asm.emit_jmp_label(label);
   }
   pub fn jump_if_carry(&mut self, label: Label) {
-    self.asm.emit_jc_label(label);
+    match label.size {
+      StackOffset(1) => self.asm.emit_jc_label(label),
+      StackOffset(4) => self.asm.emit_jc_long_label(label),
+      _ => unreachable!("Unknown label size"),
+    }
   }
   pub fn jump_if_not_carry(&mut self, label: Label) {
     self.asm.emit_jnc_label(label);
@@ -50,9 +55,6 @@ impl Recompiler {
   }
   pub fn jump_if_not_zero(&mut self, label: Label) {
     self.asm.emit_jne_label(label);
-  }
-  pub fn jump_long_if_carry(&mut self, label: Label) {
-    self.asm.emit_jc_long_label(label);
   }
   pub fn ret(&mut self) {
     stack!(self, self.asm.emit_retq());

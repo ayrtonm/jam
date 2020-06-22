@@ -1,5 +1,4 @@
 use crate::asm::Assembler;
-use crate::X64Reg;
 
 impl Assembler {
   pub fn emit_clc(&mut self) {

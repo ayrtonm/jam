@@ -1,4 +1,3 @@
-use crate::JITValue;
 use crate::X64Reg;
 use crate::recompiler::Recompiler;
 

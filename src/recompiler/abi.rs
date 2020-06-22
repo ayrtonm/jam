@@ -26,20 +26,30 @@ impl Recompiler {
     let asm = Assembler::new();
     let mut recompiler = Recompiler { alloc, asm };
 
-    recompiler.sysv_callee_prologue();
-    recompiler.load_pointers(pointers);
-    recompiler.load_emu_regs(inputs);
+    recompiler.jit_prologue(inputs, pointers);
     recompiler
   }
-  pub fn compile(mut self) -> io::Result<JITFn> {
+  fn jit_prologue(&mut self, inputs: &[EmuRegNameType], pointers: &[PtrType]) {
+    self.sysv_callee_prologue();
+    self.load_pointers(pointers);
+    self.load_emu_regs(inputs);
+  }
+  pub fn prepare_for_exit(&mut self) {
     self.free_variables();
     bind!(self, self.alloc.unbind_emu_regs());
+    //bind!(self, self.alloc.unbind_variables());
+  }
+  fn jit_epilogue(&mut self) {
+    self.prepare_for_exit();
     self.save_emu_regs();
     self.free_pointers();
     self.sysv_callee_epilogue();
     *self.alloc.native_ptrs_mut() += self.asm.emit_retq();
     #[cfg(debug_assertions)]
     assert_eq!(self.alloc.full_stack(), StackOffset(0));
+  }
+  pub fn compile(mut self) -> io::Result<JITFn> {
+    self.jit_epilogue();
     self.asm.resolve_label_addresses();
     self.asm.assemble()
   }
