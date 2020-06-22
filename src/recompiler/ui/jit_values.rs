@@ -6,9 +6,6 @@ use crate::EmuRegNameType;
 use crate::recompiler::Recompiler;
 
 impl Recompiler {
-  pub fn debug_bind(&mut self, value: JITValue) {
-    self.bind_value(value);
-  }
   pub fn reg(&self, reg: EmuRegNameType) -> Option<JITValue> {
     self.alloc
         .emulator_regs()

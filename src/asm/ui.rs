@@ -3,6 +3,7 @@ use std::mem;
 use memmap::MmapMut;
 use crate::jit_fn::JITFn;
 use crate::Direction;
+use crate::JITValue;
 use crate::Label;
 use crate::StackOffset;
 use crate::StackOffsetType;
@@ -54,7 +55,7 @@ impl Assembler {
       match t.other {
         GenericValue::JITValue(other) => {
           match other {
-            Flags => {
+            JITValue::Flags => {
               match t.dir {
                 Direction::ToReg => {
                   trash!(self.emit_pushfq());

@@ -35,9 +35,8 @@ impl Recompiler {
     self.load_emu_regs(inputs);
   }
   pub fn prepare_for_exit(&mut self) {
-    bind!(self, self.alloc.unbind_variables());
-    self.free_variables();
     bind!(self, self.alloc.unbind_emu_regs());
+    self.free_variables();
   }
   fn jit_epilogue(&mut self) {
     self.save_emu_regs();
