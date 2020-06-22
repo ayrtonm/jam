@@ -37,6 +37,7 @@ impl Allocator {
     match value {
       JITValue::EmuReg(reg) => self.full_stack() - reg.position,
       JITValue::Variable(var) => self.full_stack() - var.position,
+      JITValue::Flags => unreachable!(""),
     }
   }
   pub fn ptr_position(&self, idx: usize) -> StackOffset {

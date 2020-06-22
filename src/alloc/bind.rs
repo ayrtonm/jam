@@ -26,6 +26,12 @@ impl Allocator {
     let available_regs = self.available_regs().into_iter().collect::<HashSet<_>>();
     let mut unavailable_regs = X64Reg::free_regs().iter()
                                                   .filter(|r| !available_regs.contains(r))
+                                                  .filter(|r| {
+                                                    match self.mappings.get_by_left(r) {
+                                                      Some(JITValue::Flags) => false,
+                                                      _ => true,
+                                                    }
+                                                  })
                                                   .map(|&r| r)
                                                   .collect::<Vec<_>>();
     let mut prioritized_regs = self.available_regs();
@@ -120,9 +126,6 @@ impl Allocator {
             _ => false,
           }
         });
-    println!("---------------");
-    println!("{:#?}", transfers);
-    println!("");
     MultiTransfer(transfers)
   }
   pub fn unbind_variables(&mut self) -> MultiTransfer {
@@ -193,5 +196,13 @@ impl Allocator {
     } else {
       MultiTransfer(vec![])
     }
+  }
+  pub fn bind_flags(&mut self, reg: X64Reg) -> MultiTransfer {
+    let transfers = self.unbind_x64_reg(reg);
+    self.mappings.insert(reg, JITValue::Flags);
+    transfers
+  }
+  pub fn unbind_flags(&mut self) {
+    self.mappings.remove_by_right(&JITValue::Flags);
   }
 }

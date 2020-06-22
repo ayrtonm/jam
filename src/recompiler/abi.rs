@@ -37,10 +37,8 @@ impl Recompiler {
   pub fn prepare_for_exit(&mut self) {
     self.free_variables();
     bind!(self, self.alloc.unbind_emu_regs());
-    //bind!(self, self.alloc.unbind_variables());
   }
   fn jit_epilogue(&mut self) {
-    self.prepare_for_exit();
     self.save_emu_regs();
     self.free_pointers();
     self.sysv_callee_epilogue();
