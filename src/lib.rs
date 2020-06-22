@@ -53,12 +53,13 @@ enum GenericValue {
   X64Reg(X64Reg),
 }
 
+type FlagIdxType = usize;
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 #[must_use]
 pub enum JITValue {
   EmuReg(EmuReg),
   Variable(Variable),
-  Flags,
+  Flags(FlagIdxType),
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -174,14 +175,14 @@ impl JITValue {
     match self {
       JITValue::Variable(var) => var.position,
       JITValue::EmuReg(reg) => reg.position,
-      JITValue::Flags => unreachable!(""),
+      JITValue::Flags(_) => unreachable!(""),
     }
   }
   fn size(&self) -> StackOffset {
     match self {
       JITValue::Variable(var) => var.size,
       JITValue::EmuReg(reg) => reg.size,
-      JITValue::Flags => unreachable!(""),
+      JITValue::Flags(_) => unreachable!(""),
     }
   }
 }

@@ -55,7 +55,7 @@ impl Assembler {
       match t.other {
         GenericValue::JITValue(other) => {
           match other {
-            JITValue::Flags => {
+            JITValue::Flags(_) => {
               match t.dir {
                 Direction::ToReg => {
                   trash!(self.emit_pushfq());

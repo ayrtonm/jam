@@ -6,6 +6,7 @@ use crate::JITValue;
 use crate::Transfer;
 use crate::MultiTransfer;
 use crate::Direction;
+use crate::FlagIdxType;
 use crate::alloc::Allocator;
 
 impl Allocator {
@@ -29,7 +30,7 @@ impl Allocator {
                                                   .filter(|r| !available_regs.contains(r))
                                                   .filter(|r| {
                                                     match self.mappings.get_by_left(r) {
-                                                      Some(JITValue::Flags) => false,
+                                                      Some(JITValue::Flags(_)) => false,
                                                       _ => true,
                                                     }
                                                   })
@@ -168,7 +169,31 @@ impl Allocator {
       None => vec![],
     })
   }
-  pub fn swap_bindings(&mut self, reg1: X64Reg, reg2: X64Reg) -> MultiTransfer {
+  pub fn swap_binding(&mut self, reg: X64Reg) -> MultiTransfer {
+    MultiTransfer(match self.mappings.get_by_left(&reg) {
+      Some(&value) => {
+        let other_reg = self.prioritized_regs().pop_front().expect("");
+        let transfers = vec![Transfer {
+          reg: reg,
+          other: GenericValue::X64Reg(other_reg),
+          dir: Direction::FromReg,
+        }];
+        let other_val = self.mappings.get_by_left(&other_reg).map(|&v| v);
+        self.mappings.insert(other_reg, value);
+        match other_val {
+          Some(other_val) => {
+            self.mappings.insert(reg, other_val);
+          },
+          None => {
+            self.mappings.remove_by_left(&reg);
+          },
+        };
+        transfers
+      },
+      None => vec![],
+    })
+  }
+  pub fn swap_specific_bindings(&mut self, reg1: X64Reg, reg2: X64Reg) -> MultiTransfer {
     if reg1 != reg2 {
       let val1 = self.mappings.get_by_left(&reg1).map(|&v| v);
       let val2 = self.mappings.get_by_left(&reg2).map(|&v| v);
@@ -197,8 +222,20 @@ impl Allocator {
       MultiTransfer(vec![])
     }
   }
+  fn flag_count(&self) -> FlagIdxType {
+    self.mappings
+        .right_values()
+        .filter(|&v| {
+          match v {
+            JITValue::Flags(_) => true,
+            _ => false,
+          }
+        })
+        .count()
+  }
   pub fn bind_flags(&mut self) -> MultiTransfer {
-    MultiTransfer(match self.mappings.get_by_right(&JITValue::Flags) {
+    let flag_count = self.flag_count();
+    MultiTransfer(match self.mappings.get_by_right(&JITValue::Flags(flag_count)) {
       Some(_) => vec![],
       _ => {
         let reg = self.prioritized_regs().pop_front().expect("");
@@ -212,10 +249,10 @@ impl Allocator {
                 dir: Direction::FromReg,
               });
             });
-        self.mappings.insert(reg, JITValue::Flags);
+        self.mappings.insert(reg, JITValue::Flags(flag_count));
         transfers.push(Transfer {
           reg: reg,
-          other: GenericValue::JITValue(JITValue::Flags),
+          other: GenericValue::JITValue(JITValue::Flags(flag_count)),
           dir: Direction::ToReg,
         });
         transfers
@@ -223,11 +260,12 @@ impl Allocator {
     })
   }
   pub fn unbind_flags(&mut self) -> MultiTransfer {
-    MultiTransfer(match self.mappings.get_by_right(&JITValue::Flags) {
+    let flag_count = self.flag_count();
+    MultiTransfer(match self.mappings.get_by_right(&JITValue::Flags(flag_count - 1)) {
       Some(&reg) => {
         let transfers = vec![Transfer {
           reg: reg,
-          other: GenericValue::JITValue(JITValue::Flags),
+          other: GenericValue::JITValue(JITValue::Flags(flag_count - 1)),
           dir: Direction::FromReg,
         }];
         self.mappings.remove_by_left(&reg);
