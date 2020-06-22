@@ -1,5 +1,11 @@
 #![deny(unused_must_use)]
 
+macro_rules! trash {
+  ($offset:expr) => {
+    let _ = $offset;
+  }
+}
+
 pub mod recompiler;
 pub mod jit_fn;
 mod alloc;

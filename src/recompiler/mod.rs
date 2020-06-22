@@ -14,12 +14,6 @@ macro_rules! stack {
   }
 }
 
-macro_rules! trash {
-  ($offset:expr) => {
-    let _ = $offset;
-  }
-}
-
 macro_rules! bind {
   ($self:expr, $transfers:expr) => {
     {

@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::collections::VecDeque;
 use crate::X64Reg;
 use crate::GenericValue;
 use crate::JITValue;
@@ -13,16 +14,16 @@ impl Allocator {
       println!("{:?}", i);
     }
   }
-  fn available_regs(&self) -> Vec<X64Reg> {
+  fn available_regs(&self) -> VecDeque<X64Reg> {
     let used_regs = self.mappings
                         .left_values()
                         .collect::<HashSet<_>>();
     X64Reg::free_regs().iter()
                        .filter(|r| !used_regs.contains(r))
                        .map(|&r| r)
-                       .collect::<Vec<_>>()
+                       .collect::<VecDeque<_>>()
   }
-  fn prioritized_regs(&self) -> Vec<X64Reg> {
+  fn prioritized_regs(&self) -> VecDeque<X64Reg> {
     let available_regs = self.available_regs().into_iter().collect::<HashSet<_>>();
     let mut unavailable_regs = X64Reg::free_regs().iter()
                                                   .filter(|r| !available_regs.contains(r))
@@ -33,7 +34,7 @@ impl Allocator {
                                                     }
                                                   })
                                                   .map(|&r| r)
-                                                  .collect::<Vec<_>>();
+                                                  .collect::<VecDeque<_>>();
     let mut prioritized_regs = self.available_regs();
     prioritized_regs.append(&mut unavailable_regs);
     prioritized_regs
@@ -73,13 +74,12 @@ impl Allocator {
     let mut replacement_regs = self.prioritized_regs()
                                .into_iter()
                                .filter(|r| !reserved_regs.contains(r))
-                               .rev()
-                               .collect::<Vec<_>>();
+                               .collect::<VecDeque<_>>();
     let unbound_values = values.iter()
                                .filter(|v| self.mappings.get_by_right(v).is_none())
                                .collect::<Vec<_>>();
     for &v in unbound_values {
-      match replacement_regs.pop() {
+      match replacement_regs.pop_front() {
         Some(replacement_reg) => {
           self.mappings
               .get_by_left(&replacement_reg)
@@ -122,8 +122,8 @@ impl Allocator {
     self.mappings
         .retain(|_, &v| {
           match v {
-            JITValue::Variable(_) => true,
-            _ => false,
+            JITValue::EmuReg(_) => false,
+            _ => true,
           }
         });
     MultiTransfer(transfers)
@@ -148,8 +148,8 @@ impl Allocator {
     self.mappings
         .retain(|_, &v| {
           match v {
-            JITValue::EmuReg(_) => true,
-            _ => false,
+            JITValue::Variable(_) => false,
+            _ => true,
           }
         });
     MultiTransfer(transfers)
@@ -197,12 +197,43 @@ impl Allocator {
       MultiTransfer(vec![])
     }
   }
-  pub fn bind_flags(&mut self, reg: X64Reg) -> MultiTransfer {
-    let transfers = self.unbind_x64_reg(reg);
-    self.mappings.insert(reg, JITValue::Flags);
-    transfers
+  pub fn bind_flags(&mut self) -> MultiTransfer {
+    MultiTransfer(match self.mappings.get_by_right(&JITValue::Flags) {
+      Some(_) => vec![],
+      _ => {
+        let reg = self.prioritized_regs().pop_front().expect("");
+        let mut transfers = Vec::new();
+        self.mappings
+            .get_by_left(&reg)
+            .map(|&prev_value| {
+              transfers.push(Transfer {
+                reg: reg,
+                other: GenericValue::JITValue(prev_value),
+                dir: Direction::FromReg,
+              });
+            });
+        self.mappings.insert(reg, JITValue::Flags);
+        transfers.push(Transfer {
+          reg: reg,
+          other: GenericValue::JITValue(JITValue::Flags),
+          dir: Direction::ToReg,
+        });
+        transfers
+      },
+    })
   }
-  pub fn unbind_flags(&mut self) {
-    self.mappings.remove_by_right(&JITValue::Flags);
+  pub fn unbind_flags(&mut self) -> MultiTransfer {
+    MultiTransfer(match self.mappings.get_by_right(&JITValue::Flags) {
+      Some(&reg) => {
+        let transfers = vec![Transfer {
+          reg: reg,
+          other: GenericValue::JITValue(JITValue::Flags),
+          dir: Direction::FromReg,
+        }];
+        self.mappings.remove_by_left(&reg);
+        transfers
+      },
+      None => vec![],
+    })
   }
 }
