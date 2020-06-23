@@ -53,13 +53,16 @@ enum GenericValue {
   X64Reg(X64Reg),
 }
 
-type FlagIdxType = usize;
+type IdxType = usize;
+#[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
+pub struct Idx(IdxType);
 #[derive(Debug, PartialEq, Eq, Hash, Copy, Clone)]
 #[must_use]
 pub enum JITValue {
   EmuReg(EmuReg),
   Variable(Variable),
-  Flags(FlagIdxType),
+  Flags(Idx),
+  DelayedWrite(EmuReg, Idx),
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -176,6 +179,7 @@ impl JITValue {
       JITValue::Variable(var) => var.position,
       JITValue::EmuReg(reg) => reg.position,
       JITValue::Flags(_) => unreachable!(""),
+      JITValue::DelayedWrite(_,_) => unreachable!(""),
     }
   }
   fn size(&self) -> StackOffset {
@@ -183,6 +187,7 @@ impl JITValue {
       JITValue::Variable(var) => var.size,
       JITValue::EmuReg(reg) => reg.size,
       JITValue::Flags(_) => unreachable!(""),
+      JITValue::DelayedWrite(_,_) => unreachable!(""),
     }
   }
 }

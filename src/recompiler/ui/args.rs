@@ -4,6 +4,17 @@ use crate::ArgNumber;
 use crate::recompiler::Recompiler;
 
 impl Recompiler {
+  pub fn set_ret(&mut self, value: JITValue) {
+    let ret_reg = X64Reg::RAX;
+    bind!(self, match self.alloc.value_to_reg(&value) {
+      Some(&value_reg) => {
+        self.alloc.swap_specific_bindings(value_reg, ret_reg)
+      },
+      None => {
+        self.alloc.bind_specific_reg(value, ret_reg)
+      },
+    })
+  }
   fn set_argn(&mut self, value: JITValue, n: ArgNumber) {
     let arg_reg = X64Reg::argn_reg(n);
     bind!(self, match self.alloc.value_to_reg(&value) {

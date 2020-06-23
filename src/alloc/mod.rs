@@ -38,6 +38,7 @@ impl Allocator {
       JITValue::EmuReg(reg) => self.full_stack() - reg.position,
       JITValue::Variable(var) => self.full_stack() - var.position,
       JITValue::Flags(_) => unreachable!(""),
+      JITValue::DelayedWrite(_,_) => unreachable!(""),
     }
   }
   pub fn ptr_position(&self, idx: usize) -> StackOffset {

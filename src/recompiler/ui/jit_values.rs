@@ -3,9 +3,22 @@ use crate::StackOffsetType;
 use crate::JITValue;
 use crate::X64Reg;
 use crate::EmuRegNameType;
+use crate::EmuReg;
 use crate::recompiler::Recompiler;
 
 impl Recompiler {
+  pub fn new_delayed_write(&mut self, emu_reg: JITValue) -> JITValue {
+    match emu_reg {
+      JITValue::EmuReg(emu_reg) => {
+        bind!(self, self.alloc.bind_delayed_write(emu_reg));
+        *self.alloc.get_delayed_write(emu_reg).expect("")
+      },
+      _ => todo!(""),
+    }
+  }
+  pub fn process_delayed_write(&mut self) {
+    bind!(self, self.alloc.process_delayed_write());
+  }
   pub fn reg(&self, reg: EmuRegNameType) -> Option<JITValue> {
     self.alloc
         .emulator_regs()
