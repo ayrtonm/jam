@@ -39,4 +39,8 @@ impl Recompiler {
     let value2_reg = regs[1];
     self.asm.emit_testl_rr(value1_reg, value2_reg);
   }
+  pub fn slli_u32(&mut self, value: JITValue, imm5: u32) {
+    let reg = self.bind_value(value);
+    self.asm.emit_shll_ir(imm5, reg);
+  }
 }
