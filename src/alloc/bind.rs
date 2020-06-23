@@ -132,46 +132,6 @@ impl Allocator {
         });
     MultiTransfer(transfers)
   }
-  pub fn unbind_variables(&mut self) -> MultiTransfer {
-    let transfers = self.mappings
-                        .iter()
-                        .filter(|(_, &v)| {
-                          match v {
-                            JITValue::Variable(_) => true,
-                            _ => false,
-                          }
-                        })
-                        .map(|(&x64_reg, &variable)| {
-                          Transfer {
-                            reg: x64_reg,
-                            other: GenericValue::JITValue(variable),
-                            dir: Direction::FromReg,
-                          }
-                        })
-                        .collect();
-    self.mappings
-        .retain(|_, &v| {
-          match v {
-            JITValue::Variable(_) => false,
-            _ => true,
-          }
-        });
-    MultiTransfer(transfers)
-  }
-  pub fn unbind_x64_reg(&mut self, reg: X64Reg) -> MultiTransfer {
-    MultiTransfer(match self.mappings.get_by_left(&reg) {
-      Some(&value) => {
-        let transfer = Transfer {
-          reg: reg,
-          other: GenericValue::JITValue(value),
-          dir: Direction::FromReg,
-        };
-        self.mappings.remove_by_left(&reg);
-        vec![transfer]
-      },
-      None => vec![],
-    })
-  }
   pub fn swap_binding(&mut self, reg: X64Reg) -> MultiTransfer {
     MultiTransfer(match self.mappings.get_by_left(&reg) {
       Some(&value) => {
@@ -305,7 +265,7 @@ impl Allocator {
         .right_values()
         .filter(|&v| {
           match v {
-            JITValue::DelayedWrite(emu_reg,_) => true,
+            JITValue::DelayedWrite(other_emu_reg,_) => emu_reg == *other_emu_reg,
             _ => false,
           }
         })

@@ -3,7 +3,6 @@ use crate::StackOffsetType;
 use crate::JITValue;
 use crate::X64Reg;
 use crate::EmuRegNameType;
-use crate::EmuReg;
 use crate::recompiler::Recompiler;
 
 impl Recompiler {

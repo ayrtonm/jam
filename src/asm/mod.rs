@@ -13,6 +13,7 @@ mod flags;
 mod jmp;
 mod mov;
 mod or;
+mod shift;
 mod stack;
 mod test;
 mod xchg;
@@ -44,6 +45,9 @@ impl Assembler {
   const MOV2: u8 = 0x89;
   const PUSH: u8 = 0x50;
   const POP: u8 = 0x58;
+  const SHL: u8 = 0xe0;
+  const SHR: u8 = 0xe8;
+  const SAR: u8 = 0xf8;
   const STC: u8 = 0xf9;
   const TEST: u8 = 0x85;
   const XCHG: u8 = 0x87;
