@@ -6,6 +6,7 @@ use crate::X64Reg;
 
 mod ui;
 mod add;
+mod and;
 mod bt;
 mod call;
 mod cmp;
@@ -27,10 +28,13 @@ pub(super) struct Assembler {
 }
 
 impl Assembler {
-  const ADD_R: u8 = 0x01;
-  const ADD_I8: u8 = 0x83;
-  const ADD_I32: u8 = 0x81;
   const ADD_EAX: u8 = 0x05;
+  const ADD_I32: u8 = 0x81;
+  const ADD_I8: u8 = 0x83;
+  const ADD_R: u8 = 0x01;
+  const AND_EAX: u8 = 0x25;
+  const AND_I32: u8 = 0x81;
+  const AND_R: u8 = 0x21;
   const CALL: u8 = 0xe8;
   const CLC: u8 = 0xf8;
   const CMP: u8 = 0x39;
@@ -43,6 +47,9 @@ impl Assembler {
   //FIXME: use more descriptive names for mov
   const MOV: u8 = 0x8b;
   const MOV2: u8 = 0x89;
+  const OR_EAX: u8 = 0x0d;
+  const OR_I32: u8 = 0x81;
+  const OR_R: u8 = 0x09;
   const PUSH: u8 = 0x50;
   const POP: u8 = 0x58;
   const SHL: u8 = 0xe0;
