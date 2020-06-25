@@ -27,6 +27,12 @@ impl Recompiler {
     let dest_reg = self.bind_value(dest);
     trash!(self.asm.emit_addl_ir(imm32, dest_reg));
   }
+  pub fn andv_u32(&mut self, dest: JITValue, src: JITValue) {
+    let regs = self.bind_multivalue(vec![dest, src]);
+    let dest_reg = regs[0];
+    let src_reg = regs[1];
+    self.asm.emit_andl_rr(src_reg, dest_reg);
+  }
   pub fn andi_u32(&mut self, dest: JITValue, imm32: u32) {
     let dest_reg = self.bind_value(dest);
     self.asm.emit_andl_ir(imm32, dest_reg);
