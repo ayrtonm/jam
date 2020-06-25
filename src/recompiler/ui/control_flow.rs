@@ -8,6 +8,16 @@ impl Recompiler {
   pub fn call_label(&mut self, label: Label) {
     stack!(self, self.asm.emit_call_label(label));
   }
+  pub fn call_ptr_with_ret(&mut self, ptr_idx: usize) {
+    self.sysv_caller_prologue_with_ret();
+    let misalignment = self.alloc.full_stack().0 % 16;
+    let align = 16 - misalignment;
+    stack!(self, self.asm.emit_addq_ir(-align, X64Reg::RSP));
+    let offset = self.alloc.ptr_position(ptr_idx);
+    trash!(self.asm.emit_callq_m_offset(X64Reg::RSP, offset));
+    stack!(self, self.asm.emit_addq_ir(align, X64Reg::RSP));
+    self.sysv_caller_epilogue_with_ret();
+  }
   pub fn call_ptr(&mut self, ptr_idx: usize) {
     self.sysv_caller_prologue();
     let misalignment = self.alloc.full_stack().0 % 16;

@@ -99,6 +99,7 @@ impl Assembler {
           let rel_distance = def - loc - label.size;
           match label.size {
             StackOffset(1) => {
+              #[cfg(debug_assertions)]
               assert_eq!(rel_distance.0, rel_distance.0 as u8 as i32);
               self.buffer[loc.0 as usize] = rel_distance.0 as u8;
             },

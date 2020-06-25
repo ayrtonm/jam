@@ -5,6 +5,7 @@ use crate::X64Reg;
 impl Assembler {
   pub fn emit_addl_rr(&mut self, src: X64Reg, dest: X64Reg) {
     //let's avoid this since it would give a StackOffset that varies at JIT-runtime
+    #[cfg(debug_assertions)]
     assert!(src != X64Reg::RSP);
     self.emit_cond_rexrb(src, dest);
     self.emit_add_rr(src, dest);
