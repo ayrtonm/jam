@@ -52,4 +52,12 @@ impl Assembler {
     self.emit_u8(Assembler::JC_LONG);
     self.emit_label(label);
   }
+  pub fn emit_js_rel8(&mut self, offset: i8) {
+    self.emit_u8(Assembler::JS);
+    self.emit_u8(offset as u8);
+  }
+  pub fn emit_js_label(&mut self, label: Label) {
+    self.emit_u8(Assembler::JS);
+    self.emit_label(label);
+  }
 }

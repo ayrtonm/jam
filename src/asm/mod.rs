@@ -44,6 +44,7 @@ impl Assembler {
   const JNC: u8 = 0x73;
   const JE: u8 = 0x74;
   const JNE: u8 = 0x75;
+  const JS: u8 = 0x78;
   //FIXME: use more descriptive names for mov
   const MOV: u8 = 0x8b;
   const MOV2: u8 = 0x89;

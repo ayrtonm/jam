@@ -17,4 +17,7 @@ impl Recompiler {
   pub fn set_zero(&mut self) {
     self.asm.emit_cmpl_rr(X64Reg::RAX, X64Reg::RAX);
   }
+  pub fn clear_signed(&mut self) {
+    self.asm.emit_cmpl_rr(X64Reg::RAX, X64Reg::RAX);
+  }
 }

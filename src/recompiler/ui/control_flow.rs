@@ -66,6 +66,9 @@ impl Recompiler {
   pub fn jump_if_not_zero(&mut self, label: Label) {
     self.asm.emit_jne_label(label);
   }
+  pub fn jump_if_signed(&mut self, label: Label) {
+    self.asm.emit_js_label(label);
+  }
   pub fn ret(&mut self) {
     stack!(self, self.asm.emit_retq());
   }
