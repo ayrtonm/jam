@@ -8,7 +8,7 @@ impl Assembler {
     } else {
       self.emit_cond_rexb(reg);
       self.emit_u8(Assembler::AND_I32);
-      self.emit_u8(0xe0 | reg.low());
+      self.emit_u8(Assembler::MOD11 | Assembler::AND_EXT | reg.low());
     }
     self.emit_u32(imm32);
   }

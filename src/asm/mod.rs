@@ -16,6 +16,7 @@ mod mov;
 mod or;
 mod shift;
 mod stack;
+mod sub;
 mod test;
 mod xchg;
 mod xor;
@@ -35,6 +36,7 @@ impl Assembler {
   const AND_EAX: u8 = 0x25;
   const AND_I32: u8 = 0x81;
   const AND_R: u8 = 0x21;
+  const AND_EXT: u8 = (4 << 3);
   const CALL: u8 = 0xe8;
   const CLC: u8 = 0xf8;
   const CMP: u8 = 0x39;
@@ -59,6 +61,11 @@ impl Assembler {
   const SHR: u8 = 0xe8;
   const SAR: u8 = 0xf8;
   const STC: u8 = 0xf9;
+  const SUB_EAX: u8 = 0x2D;
+  const SUB_I32: u8 = 0x81;
+  const SUB_I8: u8 = 0x83;
+  const SUB_R: u8 = 0x29;
+  const SUB_EXT: u8 = (5 << 3);
   const TEST: u8 = 0x85;
   const XCHG: u8 = 0x87;
   const XOR: u8 = 0x31;

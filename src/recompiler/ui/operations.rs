@@ -57,4 +57,14 @@ impl Recompiler {
     let reg = self.bind_value(value);
     self.asm.emit_sarl_ir(imm5, reg);
   }
+  pub fn subv_u32(&mut self, dest: JITValue, src: JITValue) {
+    let regs = self.bind_multivalue(vec![dest, src]);
+    let dest_reg = regs[0];
+    let src_reg = regs[1];
+    self.asm.emit_subl_rr(src_reg, dest_reg);
+  }
+  pub fn subi_u32(&mut self, dest: JITValue, imm32: i32) {
+    let dest_reg = self.bind_value(dest);
+    trash!(self.asm.emit_subl_ir(imm32, dest_reg));
+  }
 }
