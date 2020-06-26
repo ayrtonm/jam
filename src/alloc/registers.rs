@@ -9,10 +9,21 @@ use crate::Direction;
 use crate::alloc::Allocator;
 
 impl Allocator {
+  pub fn debug(&self) {
+    for i in &self.mappings {
+      println!("{:?}", i);
+    }
+  }
+  pub fn contains_reg(&self, reg: &X64Reg) -> bool {
+    self.mappings.get_by_left(&reg).is_some()
+  }
+  fn used_regs(&self) -> HashSet<&X64Reg> {
+    self.mappings
+        .left_values()
+        .collect::<HashSet<_>>()
+  }
   fn available_regs(&self) -> VecDeque<X64Reg> {
-    let used_regs = self.mappings
-                        .left_values()
-                        .collect::<HashSet<_>>();
+    let used_regs = self.used_regs();
     X64Reg::free_regs().iter()
                        .filter(|r| !used_regs.contains(r))
                        .map(|&r| r)

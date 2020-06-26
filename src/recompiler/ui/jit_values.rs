@@ -6,6 +6,11 @@ use crate::EmuRegNameType;
 use crate::recompiler::Recompiler;
 
 impl Recompiler {
+  pub fn debug(&self) {
+    println!("Mappings");
+    self.alloc.debug();
+    println!("");
+  }
   pub fn new_delayed_write(&mut self, emu_reg: JITValue) -> JITValue {
     match emu_reg {
       JITValue::EmuReg(emu_reg) => {

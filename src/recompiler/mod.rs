@@ -50,24 +50,48 @@ impl Recompiler {
   }
   fn sysv_caller_prologue_with_ret(&mut self) {
     stack!(self, X64Reg::caller_saved_regs_with_ret().into_iter()
-                                                     .map(|r| self.asm.emit_pushq_r(r))
+                                                     .filter_map(|r| {
+                                                       if self.alloc.contains_reg(&r) {
+                                                         Some(self.asm.emit_pushq_r(r))
+                                                       } else {
+                                                         None
+                                                       }
+                                                     })
                                                      .sum::<StackOffset>());
   }
   fn sysv_caller_epilogue_with_ret(&mut self) {
     stack!(self, X64Reg::caller_saved_regs_with_ret().into_iter()
                                                      .rev()
-                                                     .map(|r| self.asm.emit_popq_r(r))
+                                                     .filter_map(|r| {
+                                                       if self.alloc.contains_reg(&r) {
+                                                         Some(self.asm.emit_popq_r(r))
+                                                       } else {
+                                                         None
+                                                       }
+                                                     })
                                                      .sum::<StackOffset>());
   }
   fn sysv_caller_prologue(&mut self) {
     stack!(self, X64Reg::caller_saved_regs().into_iter()
-                                            .map(|r| self.asm.emit_pushq_r(r))
+                                            .filter_map(|r| {
+                                              if self.alloc.contains_reg(&r) {
+                                                Some(self.asm.emit_pushq_r(r))
+                                              } else {
+                                                None
+                                              }
+                                            })
                                             .sum::<StackOffset>());
   }
   fn sysv_caller_epilogue(&mut self) {
     stack!(self, X64Reg::caller_saved_regs().into_iter()
                                             .rev()
-                                            .map(|r| self.asm.emit_popq_r(r))
+                                            .filter_map(|r| {
+                                              if self.alloc.contains_reg(&r) {
+                                                Some(self.asm.emit_popq_r(r))
+                                              } else {
+                                                None
+                                              }
+                                            })
                                             .sum::<StackOffset>());
   }
 }

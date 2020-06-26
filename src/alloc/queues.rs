@@ -12,16 +12,10 @@ impl Allocator {
   fn max_flag(&self) -> IdxType {
     self.mappings
         .right_values()
-        .filter(|&v| {
+        .filter_map(|&v| {
           match v {
-            JITValue::Flags(_) => true,
-            _ => false,
-          }
-        })
-        .map(|&v| {
-          match v {
-            JITValue::Flags(x) => x.0 + 1,
-            _ => unreachable!(""),
+            JITValue::Flags(x) => Some(x.0 + 1),
+            _ => None,
           }
         })
         .max()
@@ -30,16 +24,10 @@ impl Allocator {
   fn min_flag(&self) -> IdxType {
     self.mappings
         .right_values()
-        .filter(|&v| {
+        .filter_map(|&v| {
           match v {
-            JITValue::Flags(_) => true,
-            _ => false,
-          }
-        })
-        .map(|&v| {
-          match v {
-            JITValue::Flags(x) => x.0,
-            _ => unreachable!(""),
+            JITValue::Flags(x) => Some(x.0),
+            _ => None,
           }
         })
         .min()
@@ -48,16 +36,10 @@ impl Allocator {
   fn max_write(&self) -> IdxType {
     self.mappings
         .right_values()
-        .filter(|&v| {
+        .filter_map(|&v| {
           match v {
-            JITValue::DelayedWrite(_,_) => true,
-            _ => false,
-          }
-        })
-        .map(|&v| {
-          match v {
-            JITValue::DelayedWrite(_,x) => x.0 + 1,
-            _ => unreachable!(""),
+            JITValue::DelayedWrite(_,x) => Some(x.0 + 1),
+            _ => None,
           }
         })
         .min()
@@ -66,16 +48,10 @@ impl Allocator {
   fn min_write(&self) -> IdxType {
     self.mappings
         .right_values()
-        .filter(|&v| {
+        .filter_map(|&v| {
           match v {
-            JITValue::DelayedWrite(_,_) => true,
-            _ => false,
-          }
-        })
-        .map(|&v| {
-          match v {
-            JITValue::DelayedWrite(_,x) => x.0,
-            _ => unreachable!(""),
+            JITValue::DelayedWrite(_,x) => Some(x.0),
+            _ => None,
           }
         })
         .min()
