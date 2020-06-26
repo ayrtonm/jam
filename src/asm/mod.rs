@@ -52,6 +52,7 @@ impl Assembler {
   const OR_R: u8 = 0x09;
   const PUSH: u8 = 0x50;
   const POP: u8 = 0x58;
+  const SHIFT: u8 = 0xc1;
   const SHL: u8 = 0xe0;
   const SHR: u8 = 0xe8;
   const SAR: u8 = 0xf8;
