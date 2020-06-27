@@ -25,6 +25,9 @@ impl Assembler {
       labels_defined,
     }
   }
+  pub fn emit_illegal_insn(&mut self) {
+    self.emit_u8(0xff);
+  }
   pub fn new_label(&mut self) -> Label {
     let label = Label {
       id: self.label_counter,

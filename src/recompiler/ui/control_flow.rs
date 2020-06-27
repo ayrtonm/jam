@@ -72,6 +72,9 @@ impl Recompiler {
   pub fn jump_if_not_signed(&mut self, label: Label) {
     self.asm.emit_jns_label(label);
   }
+  pub fn jump_if_not_less(&mut self, label: Label) {
+    self.asm.emit_jnl_label(label);
+  }
   pub fn ret(&mut self) {
     stack!(self, self.asm.emit_retq());
   }

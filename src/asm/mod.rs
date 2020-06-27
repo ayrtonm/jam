@@ -10,6 +10,7 @@ mod and;
 mod bt;
 mod call;
 mod cmp;
+mod div;
 mod flags;
 mod jmp;
 mod mov;
@@ -40,6 +41,9 @@ impl Assembler {
   const CALL: u8 = 0xe8;
   const CLC: u8 = 0xf8;
   const CMP: u8 = 0x39;
+  const DIV: u8 = 0xf7;
+  const DIV_EXT: u8 = (6 << 3);
+  const IDIV_EXT: u8 = (7 << 3);
   const JMP: u8 = 0xeb;
   const JC: u8 = 0x72;
   const JC_LONG: u8 = 0x82;
@@ -48,6 +52,7 @@ impl Assembler {
   const JNE: u8 = 0x75;
   const JS: u8 = 0x78;
   const JNS: u8 = 0x79;
+  const JNL: u8 = 0x7D;
   //FIXME: use more descriptive names for mov
   const MOV: u8 = 0x8b;
   const MOV2: u8 = 0x89;

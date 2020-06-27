@@ -68,4 +68,12 @@ impl Assembler {
     self.emit_u8(Assembler::JNS);
     self.emit_label(label);
   }
+  pub fn emit_jnl_rel8(&mut self, offset: i8) {
+    self.emit_u8(Assembler::JNL);
+    self.emit_u8(offset as u8);
+  }
+  pub fn emit_jnl_label(&mut self, label: Label) {
+    self.emit_u8(Assembler::JNL);
+    self.emit_label(label);
+  }
 }

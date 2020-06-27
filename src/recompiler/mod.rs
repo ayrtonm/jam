@@ -48,6 +48,9 @@ impl Recompiler {
     bind!(self, self.alloc.bind_value(value));
     *self.alloc.value_to_reg(&value).expect("")
   }
+  fn bind_specific_reg(&mut self, value: JITValue, reg: X64Reg) {
+    bind!(self, self.alloc.bind_specific_reg(value, reg));
+  }
   fn sysv_caller_prologue_with_ret(&mut self) {
     stack!(self, X64Reg::caller_saved_regs_with_ret().into_iter()
                                                      .filter_map(|r| {

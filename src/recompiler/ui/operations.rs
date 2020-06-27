@@ -1,4 +1,5 @@
 use crate::JITValue;
+use crate::X64Reg;
 use crate::recompiler::Recompiler;
 
 impl Recompiler {
@@ -53,6 +54,10 @@ impl Recompiler {
     let reg = self.bind_value(value);
     self.asm.emit_shll_ir(imm5, reg);
   }
+  pub fn srli_u32(&mut self, value: JITValue, imm5: u32) {
+    let reg = self.bind_value(value);
+    self.asm.emit_shrl_ir(imm5, reg);
+  }
   pub fn srai_u32(&mut self, value: JITValue, imm5: u32) {
     let reg = self.bind_value(value);
     self.asm.emit_sarl_ir(imm5, reg);
@@ -66,5 +71,23 @@ impl Recompiler {
   pub fn subi_u32(&mut self, dest: JITValue, imm32: i32) {
     let dest_reg = self.bind_value(dest);
     trash!(self.asm.emit_subl_ir(imm32, dest_reg));
+  }
+  pub fn divv_u32(&mut self, dividend: JITValue, divisor: JITValue, quotient: JITValue, remainder: JITValue) {
+    self.setv_u32(quotient, dividend);
+    self.seti_u32(remainder, 0);
+    self.bind_specific_reg(quotient, X64Reg::RAX);
+    self.bind_specific_reg(remainder, X64Reg::RDX);
+    let regs = self.bind_multivalue(vec![divisor, quotient, remainder]);
+    let divisor_reg = regs[0];
+    self.asm.emit_idivl_r(divisor_reg);
+  }
+  pub fn divuv_u32(&mut self, dividend: JITValue, divisor: JITValue, quotient: JITValue, remainder: JITValue) {
+    self.setv_u32(quotient, dividend);
+    self.seti_u32(remainder, 0);
+    self.bind_specific_reg(quotient, X64Reg::RAX);
+    self.bind_specific_reg(remainder, X64Reg::RDX);
+    let regs = self.bind_multivalue(vec![divisor, quotient, remainder]);
+    let divisor_reg = regs[0];
+    self.asm.emit_divl_r(divisor_reg);
   }
 }
