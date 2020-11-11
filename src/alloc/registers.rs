@@ -3,15 +3,18 @@ use std::collections::VecDeque;
 use crate::X64Reg;
 use crate::GenericValue;
 use crate::JITValue;
+use crate::Move;
 use crate::Transfer;
-use crate::MultiTransfer;
 use crate::Direction;
 use crate::alloc::Allocator;
 
 impl Allocator {
   pub fn debug(&self) {
-    for i in &self.mappings {
-      println!("{:?}", i);
+    let mut sorted_keys = self.mappings.left_values().collect::<Vec<_>>();
+    sorted_keys.sort_by(|&&a,&&b| (a as u8).cmp(&(b as u8)));
+    for i in sorted_keys {
+      let j = self.mappings.get_by_left(&i);
+      println!("{:?} <=> {:?}", i, j.unwrap());
     }
   }
   pub fn contains_reg(&self, reg: &X64Reg) -> bool {
@@ -49,29 +52,29 @@ impl Allocator {
   pub fn value_to_reg(&self, value: &JITValue) -> Option<&X64Reg> {
     self.mappings.get_by_right(value)
   }
-  pub fn bind_specific_reg(&mut self, value: JITValue, reg: X64Reg) -> MultiTransfer {
+  pub fn bind_specific_reg(&mut self, value: JITValue, reg: X64Reg) -> Transfer {
     let mut transfers = Vec::new();
     self.mappings
         .get_by_left(&reg)
         .map(|&prev_value| {
-          transfers.push(Transfer {
+          transfers.push(Move {
             reg: reg,
             other: GenericValue::JITValue(prev_value),
             dir: Direction::FromReg,
           });
         });
     self.mappings.insert(reg, value);
-    transfers.push(Transfer {
+    transfers.push(Move {
       reg: reg,
       other: GenericValue::JITValue(value),
       dir: Direction::ToReg,
     });
-    MultiTransfer(transfers)
+    Transfer(transfers)
   }
-  pub fn bind_value(&mut self, value: JITValue) -> MultiTransfer {
+  pub fn bind_value(&mut self, value: JITValue) -> Transfer {
     self.bind_multivalue(&vec![value])
   }
-  pub fn bind_multivalue(&mut self, values: &Vec<JITValue>) -> MultiTransfer {
+  pub fn bind_multivalue(&mut self, values: &Vec<JITValue>) -> Transfer {
     let mut transfers = Vec::new();
     let reserved_regs = values.iter()
                               .map(|v| self.mappings.get_by_right(v))
@@ -91,14 +94,14 @@ impl Allocator {
           self.mappings
               .get_by_left(&replacement_reg)
               .map(|&prev_value| {
-                transfers.push(Transfer {
+                transfers.push(Move {
                   reg: replacement_reg,
                   other: GenericValue::JITValue(prev_value),
                   dir: Direction::FromReg,
                 });
               });
           self.mappings.insert(replacement_reg, v);
-          transfers.push(Transfer {
+          transfers.push(Move {
             reg: replacement_reg,
             other: GenericValue::JITValue(v),
             dir: Direction::ToReg,
@@ -107,9 +110,9 @@ impl Allocator {
         None => panic!("Can't bind the values {:?} simultaneously", values),
       }
     }
-    MultiTransfer(transfers)
+    Transfer(transfers)
   }
-  pub fn unbind_emu_regs(&mut self) -> MultiTransfer {
+  pub fn unbind_emu_regs(&mut self) -> Transfer {
     let transfers = self.mappings
                         .iter()
                         .filter(|(_, &v)| {
@@ -119,7 +122,7 @@ impl Allocator {
                           }
                         })
                         .map(|(&x64_reg, &emu_reg)| {
-                          Transfer {
+                          Move {
                             reg: x64_reg,
                             other: GenericValue::JITValue(emu_reg),
                             dir: Direction::FromReg,
@@ -129,17 +132,17 @@ impl Allocator {
     self.mappings
         .retain(|_, &v| {
           match v {
-            JITValue::EmuReg(_) => false,
+            JITValue::EmuReg(_) | JITValue::Variable(_) => false,
             _ => true,
           }
         });
-    MultiTransfer(transfers)
+    Transfer(transfers)
   }
-  pub fn swap_binding(&mut self, reg: X64Reg) -> MultiTransfer {
-    MultiTransfer(match self.mappings.get_by_left(&reg) {
+  pub fn swap_binding(&mut self, reg: X64Reg) -> Transfer {
+    Transfer(match self.mappings.get_by_left(&reg) {
       Some(&value) => {
         let other_reg = self.prioritized_regs().pop_front().expect("");
-        let transfers = vec![Transfer {
+        let transfers = vec![Move {
           reg: reg,
           other: GenericValue::X64Reg(other_reg),
           dir: Direction::FromReg,
@@ -159,7 +162,7 @@ impl Allocator {
       None => vec![],
     })
   }
-  pub fn swap_specific_bindings(&mut self, reg1: X64Reg, reg2: X64Reg) -> MultiTransfer {
+  pub fn swap_specific_bindings(&mut self, reg1: X64Reg, reg2: X64Reg) -> Transfer {
     if reg1 != reg2 {
       let val1 = self.mappings.get_by_left(&reg1).map(|&v| v);
       let val2 = self.mappings.get_by_left(&reg2).map(|&v| v);
@@ -179,13 +182,13 @@ impl Allocator {
           self.mappings.remove_by_left(&reg1);
         },
       }
-      MultiTransfer(vec![Transfer {
+      Transfer(vec![Move {
         reg: reg1,
         other: GenericValue::X64Reg(reg2),
         dir: Direction::FromReg,
       }])
     } else {
-      MultiTransfer(vec![])
+      Transfer(vec![])
     }
   }
 }

@@ -1,8 +1,8 @@
 use crate::EmuReg;
 use crate::GenericValue;
 use crate::JITValue;
+use crate::Move;
 use crate::Transfer;
-use crate::MultiTransfer;
 use crate::Direction;
 use crate::Idx;
 use crate::IdxType;
@@ -57,32 +57,32 @@ impl Allocator {
         .min()
         .unwrap_or(0)
   }
-  pub fn bind_flags(&mut self) -> MultiTransfer {
+  pub fn bind_flags(&mut self) -> Transfer {
     let flag_idx = Idx(self.max_flag());
     let reg = self.prioritized_regs().pop_front().expect("");
     let mut transfers = Vec::new();
     self.mappings
         .get_by_left(&reg)
         .map(|&prev_value| {
-          transfers.push(Transfer {
+          transfers.push(Move {
             reg: reg,
             other: GenericValue::JITValue(prev_value),
             dir: Direction::FromReg,
           });
         });
     self.mappings.insert(reg, JITValue::Flags(flag_idx));
-    transfers.push(Transfer {
+    transfers.push(Move {
       reg: reg,
       other: GenericValue::JITValue(JITValue::Flags(flag_idx)),
       dir: Direction::ToReg,
     });
-    MultiTransfer(transfers)
+    Transfer(transfers)
   }
-  pub fn unbind_flags(&mut self) -> MultiTransfer {
+  pub fn unbind_flags(&mut self) -> Transfer {
     let flag_idx = Idx(self.min_flag());
-    MultiTransfer(match self.mappings.get_by_right(&JITValue::Flags(flag_idx)) {
+    Transfer(match self.mappings.get_by_right(&JITValue::Flags(flag_idx)) {
       Some(&reg) => {
-        let transfers = vec![Transfer {
+        let transfers = vec![Move {
           reg: reg,
           other: GenericValue::JITValue(JITValue::Flags(flag_idx)),
           dir: Direction::FromReg,
@@ -104,21 +104,21 @@ impl Allocator {
         })
         .count()
   }
-  pub fn bind_delayed_write(&mut self, emu_reg: EmuReg) -> MultiTransfer {
+  pub fn bind_delayed_write(&mut self, emu_reg: EmuReg) -> Transfer {
     let idx = Idx(self.max_write());
     let reg = self.prioritized_regs().pop_front().expect("");
     let mut transfers = Vec::new();
     self.mappings
         .get_by_left(&reg)
         .map(|&prev_value| {
-          transfers.push(Transfer {
+          transfers.push(Move {
             reg: reg,
             other: GenericValue::JITValue(prev_value),
             dir: Direction::FromReg,
           })
         });
     self.mappings.insert(reg, JITValue::DelayedWrite(emu_reg, idx));
-    MultiTransfer(transfers)
+    Transfer(transfers)
   }
   pub fn get_delayed_write(&self, emu_reg: EmuReg) -> Option<&JITValue> {
     self.mappings
@@ -131,7 +131,7 @@ impl Allocator {
         })
         .next()
   }
-  pub fn process_delayed_write(&mut self) -> MultiTransfer {
+  pub fn process_delayed_write(&mut self) -> Transfer {
     let mut transfers = Vec::new();
     if self.write_count() != 0 {
       let idx = Idx(self.min_write());
@@ -158,7 +158,7 @@ impl Allocator {
             _ => unreachable!(""),
           };
           self.mappings.remove_by_left(&x64_reg);
-          transfers.push(Transfer {
+          transfers.push(Move {
             reg: x64_reg,
             other: GenericValue::X64Reg(other_reg),
             dir: Direction::FromReg,
@@ -167,6 +167,6 @@ impl Allocator {
         None => (),
       }
     };
-    MultiTransfer(transfers)
+    Transfer(transfers)
   }
 }

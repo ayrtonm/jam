@@ -73,7 +73,7 @@ enum Direction {
 
 #[derive(Debug)]
 #[must_use]
-struct Transfer {
+struct Move {
   reg: X64Reg,
   other: GenericValue,
   dir: Direction,
@@ -81,7 +81,7 @@ struct Transfer {
 
 #[derive(Debug)]
 #[must_use]
-struct MultiTransfer(Vec<Transfer>);
+struct Transfer(Vec<Move>);
 
 enum ArgNumber {
   Arg1,
