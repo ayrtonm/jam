@@ -1,0 +1,26 @@
+Recompiler
+  - UI for jam
+  - coordinates the interactions between the Allocator and Assembler
+Allocator
+  - keeps track of the stack size, x64 register mappings
+  - gets requests to change the mappings
+    - coordinates the register map changes
+    - returns a MultiTransfer representing the changes
+Assembler
+  - keeps track of a buffer of machine code
+  - emits machine code into said buffer
+  - returns a StackOffset after emitting certain opcodes
+  - copies the buffer to executable mmapped memory
+  - returns a JITFn
+
+GenericReg
+  - JITReg
+    - EmuReg
+    - VarReg
+  - X64Reg
+
+Register hierarchy
+  - all_regs: all 16 x86-64 general purpose registers
+  - free_regs: all_regs - rsp
+  - available_regs: free_regs - mapped_registers
+  - prioritized_regs: available_regs + mapped_registers
